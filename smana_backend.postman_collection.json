@@ -1,0 +1,730 @@
+{
+  "info": {
+    "name": "Smana Backend API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "/api/auth",
+      "item": [
+        {
+          "name": "POST /api/auth/login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "From authRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/auth/logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "From authRoutes.ts"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "/api/rooms",
+      "item": [
+        {
+          "name": "GET /api/rooms/",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/rooms/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "rooms"
+              ]
+            },
+            "description": "From roomRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/rooms/",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/rooms/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "rooms"
+              ]
+            },
+            "description": "From roomRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/rooms/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/rooms/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                ":id"
+              ]
+            },
+            "description": "From roomRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "PUT /api/rooms/:id/status",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/rooms/:id/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                ":id",
+                "status"
+              ]
+            },
+            "description": "From roomRoutes.ts"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "/api/menu",
+      "item": [
+        {
+          "name": "GET /api/menu/admin",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/menu/admin",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "menu",
+                "admin"
+              ]
+            },
+            "description": "From menuRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/menu/",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/menu/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "menu"
+              ]
+            },
+            "description": "From menuRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/menu/",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/menu/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "menu"
+              ]
+            },
+            "description": "From menuRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "PUT /api/menu/:id",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/menu/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "menu",
+                ":id"
+              ]
+            },
+            "description": "From menuRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE /api/menu/:id",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/menu/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "menu",
+                ":id"
+              ]
+            },
+            "description": "From menuRoutes.ts"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "/api/orders",
+      "item": [
+        {
+          "name": "GET /api/orders/my",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/orders/my",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "my"
+              ]
+            },
+            "description": "From orderRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/orders/",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/orders/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders"
+              ]
+            },
+            "description": "From orderRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/orders/",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/orders/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders"
+              ]
+            },
+            "description": "From orderRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "PUT /api/orders/:id/status",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/orders/:id/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                ":id",
+                "status"
+              ]
+            },
+            "description": "From orderRoutes.ts"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "/api/service-requests",
+      "item": [
+        {
+          "name": "POST /api/service-requests/",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/service-requests/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "service-requests"
+              ]
+            },
+            "description": "From serviceRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/service-requests/",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/service-requests/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "service-requests"
+              ]
+            },
+            "description": "From serviceRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "PUT /api/service-requests/:id/status",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/service-requests/:id/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "service-requests",
+                ":id",
+                "status"
+              ]
+            },
+            "description": "From serviceRoutes.ts"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "/api/guests",
+      "item": [
+        {
+          "name": "POST /api/guests/login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/guests/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "guests",
+                "login"
+              ]
+            },
+            "description": "From guestRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/guests/register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/guests/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "guests",
+                "register"
+              ]
+            },
+            "description": "From guestRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/guests/check-out/:id",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/guests/check-out/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "guests",
+                "check-out",
+                ":id"
+              ]
+            },
+            "description": "From guestRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/guests/",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/guests/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "guests"
+              ]
+            },
+            "description": "From guestRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/guests/",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/guests/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "guests"
+              ]
+            },
+            "description": "From guestRoutes.ts"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "/api/upload",
+      "item": [
+        {
+          "name": "POST /api/upload/",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/upload/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "upload"
+              ]
+            },
+            "description": "From uploadRoutes.ts"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "/api/staff",
+      "item": [
+        {
+          "name": "GET /api/staff/",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/staff/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "staff"
+              ]
+            },
+            "description": "From staffRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/staff/",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/staff/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "staff"
+              ]
+            },
+            "description": "From staffRoutes.ts"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "/api/payments",
+      "item": [
+        {
+          "name": "POST /api/payments/checkout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/payments/checkout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments",
+                "checkout"
+              ]
+            },
+            "description": "From paymentRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/payments/status/:checkoutId",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/payments/status/:checkoutId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments",
+                "status",
+                ":checkoutId"
+              ]
+            },
+            "description": "From paymentRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/payments/callback/:orderId",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/payments/callback/:orderId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments",
+                "callback",
+                ":orderId"
+              ]
+            },
+            "description": "From paymentRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/payments/registration",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/payments/registration",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments",
+                "registration"
+              ]
+            },
+            "description": "From paymentRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/payments/registration/:checkoutId",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/payments/registration/:checkoutId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments",
+                "registration",
+                ":checkoutId"
+              ]
+            },
+            "description": "From paymentRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/payments/token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/payments/token",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments",
+                "token"
+              ]
+            },
+            "description": "From paymentRoutes.ts"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "/api/feedbacks",
+      "item": [
+        {
+          "name": "POST /api/feedbacks/",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/feedbacks/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "feedbacks"
+              ]
+            },
+            "description": "From feedbackRoutes.ts"
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/feedbacks/",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/feedbacks/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "feedbacks"
+              ]
+            },
+            "description": "From feedbackRoutes.ts"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
