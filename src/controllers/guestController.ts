@@ -10,10 +10,10 @@ import generateToken from '../utils/generateToken.js';
 // @route   POST /api/guests/register
 // @access  Public
 export const registerGuest = asyncHandler(async (req: Request, res: Response) => {
-    const { name, email, phone, password } = req.body;
+    const { name, email, phone, password, dob, gender } = req.body;
 
     // Validate
-    const validation = registerGuestSchema.safeParse({ name, email, phone, password });
+    const validation = registerGuestSchema.safeParse({ name, email, phone, password, dob, gender });
     if (!validation.success) {
         res.status(400);
         throw new Error(validation.error.message);
@@ -31,6 +31,8 @@ export const registerGuest = asyncHandler(async (req: Request, res: Response) =>
         email,
         phone,
         password, // Pre-save hook will hash this
+        dob: dob ? new Date(dob) : undefined,
+        gender,
         isCheckedIn: false,
     });
 
@@ -44,6 +46,8 @@ export const registerGuest = asyncHandler(async (req: Request, res: Response) =>
         name: guest.name,
         email: guest.email,
         phone: guest.phone,
+        dob: guest.dob,
+        gender: guest.gender,
         isCheckedIn: guest.isCheckedIn,
         token
     });
@@ -58,8 +62,8 @@ export const checkInGuest = asyncHandler(async (req: Request, res: Response) => 
         // If guest exists, update them. If not, create them (password optional or default?)
         // For now keeping it simple: if creating new guest via admin, password might be empty or generated?
         // Let's assume admin check-ins might not set a password immediately, or we handle it gracefully.
-        const { name, email, phone, roomNumber, checkOutDate } = req.body;
-        console.log('Check-in Request:', { name, email, phone, roomNumber, checkOutDate });
+        const { name, email, phone, roomNumber, checkOutDate, dob, gender } = req.body;
+        console.log('Check-in Request:', { name, email, phone, roomNumber, checkOutDate, dob, gender });
 
         // ... (rest of checkIn logic, skipping schema check for password if strictly staff flow, or make it optional in schema for this route if needed)
         // Actually, let's reuse registerGuestSchema but make password optional for checkInGuest?
@@ -70,6 +74,8 @@ export const checkInGuest = asyncHandler(async (req: Request, res: Response) => 
         if (guest) {
             guest.name = name;
             guest.phone = phone;
+            if (dob) guest.dob = new Date(dob);
+            if (gender) guest.gender = gender;
             guest.roomNumber = roomNumber;
             guest.isCheckedIn = true;
             guest.checkInDate = new Date();
@@ -80,6 +86,8 @@ export const checkInGuest = asyncHandler(async (req: Request, res: Response) => 
                 name,
                 email,
                 phone,
+                dob: dob ? new Date(dob) : undefined,
+                gender,
                 roomNumber,
                 isCheckedIn: true,
                 checkInDate: new Date(),
@@ -160,6 +168,8 @@ export const loginGuest = asyncHandler(async (req: Request, res: Response) => {
             _id: guest._id,
             name: guest.name,
             email: guest.email,
+            dob: guest.dob,
+            gender: guest.gender,
             roomNumber: guest.roomNumber,
             isCheckedIn: guest.isCheckedIn,
             checkInDate: guest.checkInDate,
