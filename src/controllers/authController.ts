@@ -11,7 +11,10 @@ export const loginStaff = asyncHandler(async (req: Request, res: Response) => {
     const result = loginSchema.safeParse(req.body);
     if (!result.success) {
         res.status(400);
-        throw new Error('Invalid input');
+        // @ts-ignore - Handle Zod version mismatch where errors property might be issues
+        const issues = result.error.issues || result.error.errors || [];
+        const errorMessage = issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ');
+        throw new Error(`Invalid input: ${errorMessage}`);
     }
 
     const { email, password } = result.data;
@@ -19,7 +22,7 @@ export const loginStaff = asyncHandler(async (req: Request, res: Response) => {
     const staff = await Staff.findOne({ email });
 
     if (staff && (await staff.matchPassword(password))) {
-        generateToken(res, (staff._id as any).toString());
+        const token = generateToken(res, (staff._id as any).toString());
         staff.isOnline = true;
         await staff.save();
 
@@ -28,6 +31,7 @@ export const loginStaff = asyncHandler(async (req: Request, res: Response) => {
             name: staff.name,
             email: staff.email,
             role: staff.role,
+            token,
         });
     } else {
         res.status(401);
