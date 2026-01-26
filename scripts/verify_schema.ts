@@ -26,4 +26,4 @@ const missingOptional = {
 
 console.log('Testing Valid Payload:', registerGuestSchema.safeParse(validPayload).success);
 console.log('Testing Invalid Payload:', registerGuestSchema.safeParse(invalidPayload).success);
-console.log('Testing Missing Optional Payload:', registerGuestSchema.safeParse(missingOptional).success);
+console.log('Testing Missing Optional Payload (Should fail now):', registerGuestSchema.safeParse(missingOptional).success === false);
