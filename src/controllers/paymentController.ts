@@ -153,7 +153,7 @@ export const getPaymentStatus = asyncHandler(async (req: Request, res: Response)
             const populatedOrder = await order.populate('guestId', 'name');
             socketService.emit('new-food-order', populatedOrder);
         } else if (!isPending) {
-            order.paymentStatus = 'failed';
+            order.paymentStatus = 'cancelled';
             order.paymentResponse = paymentStatus;
             order.status = 'Cancelled'; // Cancel failed payment orders
             order.paymentCompletedAt = new Date(); // Mark payment as completed (failed)
@@ -163,7 +163,7 @@ export const getPaymentStatus = asyncHandler(async (req: Request, res: Response)
         res.status(200).json({
             success: isSuccess,
             pending: isPending,
-            paymentStatus: isSuccess ? 'success' : isPending ? 'pending' : 'failed',
+            paymentStatus: isSuccess ? 'success' : isPending ? 'pending' : 'cancelled',
             result: paymentStatus.result,
             transactionId: paymentStatus.id,
             paymentBrand: paymentStatus.paymentBrand,
@@ -273,7 +273,7 @@ export const paymentCallback = asyncHandler(async (req: Request, res: Response) 
             const populatedOrder = await order.populate('guestId', 'name');
             socketService.emit('new-food-order', populatedOrder);
         } else {
-            order.paymentStatus = 'failed';
+            order.paymentStatus = 'cancelled';
             order.paymentResponse = paymentStatus;
             order.status = 'Cancelled'; // Cancel failed payment orders
         }

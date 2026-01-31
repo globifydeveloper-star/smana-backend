@@ -27,7 +27,7 @@ class SocketService {
 
         this.io = new Server(httpServer, {
             cors: {
-                origin: [process.env.CLIENT_URL || 'http://localhost:3000', 'https://admin.smanahotels.com', 'http://localhost:3001', 'http://localhost:3005'],
+                origin: [process.env.CLIENT_URL || 'http://localhost:3000', 'http://localhost:3001', 'http://localhost:3005'],
                 methods: ['GET', 'POST'],
                 credentials: true,
             },

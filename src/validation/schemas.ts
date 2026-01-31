@@ -9,8 +9,6 @@ export const registerGuestSchema = z.object({
     name: z.string().min(2),
     email: z.string().email(),
     phone: z.string().min(8),
-    dob: z.string(), // Expecting ISO string or similar date format
-    gender: z.string(),
     password: z.string().min(6), // Add password requirement
 });
 

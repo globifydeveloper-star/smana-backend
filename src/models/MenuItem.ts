@@ -8,6 +8,7 @@ export interface IMenuItem extends Document {
     imageUrl?: string;
     isActive: boolean;
     allergens: string[];
+    allergyInfo?: string;
 }
 
 const menuItemSchema = new Schema<IMenuItem>(
@@ -19,6 +20,7 @@ const menuItemSchema = new Schema<IMenuItem>(
         imageUrl: { type: String },
         isActive: { type: Boolean, default: true },
         allergens: [{ type: String }],
+        allergyInfo: { type: String }, // Added allergy materials info
     },
     { timestamps: true }
 );

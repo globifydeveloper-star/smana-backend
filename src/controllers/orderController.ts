@@ -137,3 +137,23 @@ export const updateOrderStatus = asyncHandler(async (req: Request, res: Response
         throw new Error('Order not found');
     }
 });
+
+// @desc    Cleanup pending orders (Migrate to Cancelled)
+// @route   POST /api/orders/cleanup-pending
+// @access  Private/Admin
+export const cleanupPendingOrders = asyncHandler(async (req: Request, res: Response) => {
+    const result = await FoodOrder.updateMany(
+        { paymentStatus: 'pending' },
+        {
+            $set: {
+                status: 'Cancelled',
+                paymentStatus: 'cancelled'
+            }
+        }
+    );
+
+    res.json({
+        message: 'Cleanup successful',
+        modifiedCount: result.modifiedCount
+    });
+});

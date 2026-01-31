@@ -4,6 +4,7 @@ import {
     getOrders,
     getMyOrders,
     updateOrderStatus,
+    cleanupPendingOrders,
 } from '../controllers/orderController.js';
 import { protect, admin } from '../middlewares/authMiddleware.js';
 
@@ -17,5 +18,7 @@ router.get('/my', protect, getMyOrders);
 
 router.route('/:id/status')
     .put(protect, updateOrderStatus); // Staff/Admin
+
+router.post('/cleanup-pending', protect, admin, cleanupPendingOrders);
 
 export default router;

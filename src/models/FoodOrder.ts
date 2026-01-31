@@ -19,7 +19,7 @@ export interface IFoodOrder extends Document {
     paymentMethod: 'Cash' | 'Online' | 'HyperPay';
     // HyperPay payment tracking
     checkoutId?: string;
-    paymentStatus?: 'pending' | 'success' | 'failed';
+    paymentStatus?: 'pending' | 'success' | 'failed' | 'cancelled';
     transactionId?: string;
     paymentResponse?: any;
     paymentCompletedAt?: Date;
@@ -59,7 +59,7 @@ const foodOrderSchema = new Schema<IFoodOrder>(
         checkoutId: { type: String },
         paymentStatus: {
             type: String,
-            enum: ['pending', 'success', 'failed'],
+            enum: ['pending', 'success', 'failed', 'cancelled'],
             default: 'pending', // Added default
         },
         transactionId: { type: String, default: null }, // Added default

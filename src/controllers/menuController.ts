@@ -3,7 +3,6 @@ import asyncHandler from 'express-async-handler';
 import { MenuItem } from '../models/MenuItem.js';
 import { createMenuItemSchema } from '../validation/schemas.js';
 import { socketService } from '../services/socketService.js';
-import { uploadFromBuffer } from '../config/cloudinary.js';
 
 // @desc    Get all menu items
 // @route   GET /api/menu
@@ -25,20 +24,9 @@ export const getMenuAdmin = asyncHandler(async (req: Request, res: Response) => 
 // @route   POST /api/menu
 // @access  Private/Admin
 export const createMenuItem = asyncHandler(async (req: Request, res: Response) => {
-    const { name, price, category, description, allergens, imageUrl } = req.body;
+    const { name, price, category, description, allergens, allergyInfo, imageUrl } = req.body;
 
-    let finalImageUrl = imageUrl || '';
-
-    if (req.file) {
-        try {
-            // Upload to Cloudinary using the helper
-            const result = await uploadFromBuffer(req.file.buffer, { folder: 'smana-hotel-menu' });
-            finalImageUrl = result.secure_url;
-        } catch (error) {
-            res.status(500);
-            throw new Error('Image upload failed');
-        }
-    }
+    const finalImageUrl = req.file ? req.file.path : (imageUrl || '');
 
     if (isNaN(Number(price))) {
         res.status(400);
@@ -51,6 +39,7 @@ export const createMenuItem = asyncHandler(async (req: Request, res: Response) =
         category,
         description,
         allergens: allergens ? (typeof allergens === 'string' ? JSON.parse(allergens) : allergens) : [],
+        allergyInfo,
         imageUrl: finalImageUrl
     });
 
@@ -82,7 +71,8 @@ export const updateMenuItem = asyncHandler(async (req: Request, res: Response) =
         }
 
         menuItem.category = req.body.category || menuItem.category;
-        menuItem.description = req.body.description || menuItem.description;
+        menuItem.description = req.body.description !== undefined ? req.body.description : menuItem.description;
+        menuItem.allergyInfo = req.body.allergyInfo !== undefined ? req.body.allergyInfo : menuItem.allergyInfo;
         menuItem.isActive = req.body.isActive !== undefined ? req.body.isActive : menuItem.isActive;
 
         if (req.body.allergens) {
@@ -90,13 +80,7 @@ export const updateMenuItem = asyncHandler(async (req: Request, res: Response) =
         }
 
         if (req.file) {
-            try {
-                const result = await uploadFromBuffer(req.file.buffer, { folder: 'smana-hotel-menu' });
-                menuItem.imageUrl = result.secure_url;
-            } catch (error) {
-                res.status(500);
-                throw new Error('Image upload failed');
-            }
+            menuItem.imageUrl = req.file.path;
         } else if (req.body.imageUrl) {
             menuItem.imageUrl = req.body.imageUrl;
         }

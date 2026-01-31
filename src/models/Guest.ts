@@ -4,9 +4,7 @@ export interface IGuest extends Document {
     name: string;
     email: string;
     password?: string; // Optional because pre-existing guests might not have one (or make required for new)
-    phone: { type: String, required: true },
-    dob: Date;
-    gender: string;
+    phone: string;
     roomNumber?: string;
     isCheckedIn: boolean;
     checkInDate?: Date;
@@ -22,8 +20,6 @@ const guestSchema = new Schema<IGuest>(
         email: { type: String, required: true, unique: true },
         password: { type: String }, // Store hashed
         phone: { type: String, required: true },
-        dob: { type: Date, required: true },
-        gender: { type: String, required: true },
         roomNumber: { type: String }, // Can be null if not yet assigned or booked
         isCheckedIn: { type: Boolean, default: false },
         checkInDate: { type: Date },
