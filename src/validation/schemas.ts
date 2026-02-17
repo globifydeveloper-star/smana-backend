@@ -46,7 +46,7 @@ export const createOrderSchema = z.object({
 export const createServiceRequestSchema = z.object({
     roomNumber: z.string(),
     type: z.string(),
-    priority: z.enum(['Low', 'Medium', 'High']),
+    priority: z.enum(['Normal', 'Medium', 'High']).default('Normal'),
     message: z.string().optional(),
 });
 

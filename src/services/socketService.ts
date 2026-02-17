@@ -52,6 +52,11 @@ class SocketService {
                 console.log(`Socket ${socket.id} joined room ${room}`);
             });
 
+            socket.on('join-role', (role: string) => {
+                socket.join(`role:${role}`);
+                console.log(`Socket ${socket.id} joined role room: role:${role}`);
+            });
+
             socket.on('leave-room', (room: string) => {
                 socket.leave(room);
                 console.log(`Socket ${socket.id} left room ${room}`);

@@ -4,6 +4,7 @@ import { FoodOrder, IOrderItem } from '../models/FoodOrder.js';
 import { MenuItem } from '../models/MenuItem.js';
 import { createOrderSchema } from '../validation/schemas.js';
 import { socketService } from '../services/socketService.js';
+import { createNotification } from './notificationController.js';
 import mongoose from 'mongoose';
 
 // @desc    Place a new food order
@@ -82,6 +83,27 @@ export const placeOrder = asyncHandler(async (req: Request, res: Response) => {
         // Populate guest details for the socket event if needed
         const populatedOrder = await order.populate('guestId', 'name');
         socketService.emit('new-food-order', populatedOrder);
+
+        // Notify Chef
+        await createNotification(
+            `New Order #${populatedOrder.roomNumber}`,
+            `New food order from Room ${populatedOrder.roomNumber}.`,
+            'info',
+            'Chef',
+            undefined,
+            populatedOrder._id.toString(),
+            `/dashboard/kitchen`
+        );
+        // Notify Admin
+        await createNotification(
+            `New Order #${populatedOrder.roomNumber}`,
+            `New food order from Room ${populatedOrder.roomNumber}.`,
+            'info',
+            'Admin',
+            undefined,
+            populatedOrder._id.toString(),
+            `/dashboard/orders`
+        );
         res.status(201).json(populatedOrder);
     } else {
         res.status(400);
@@ -130,8 +152,9 @@ export const updateOrderStatus = asyncHandler(async (req: Request, res: Response
     if (order) {
         order.status = status;
         const updatedOrder = await order.save();
-        socketService.emit('order-status-changed', updatedOrder);
-        res.json(updatedOrder);
+        const populatedOrder = await updatedOrder.populate('guestId', 'name');
+        socketService.emit('order-status-changed', populatedOrder);
+        res.json(populatedOrder);
     } else {
         res.status(404);
         throw new Error('Order not found');

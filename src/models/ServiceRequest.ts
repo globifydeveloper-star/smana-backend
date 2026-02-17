@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-export type ServiceStatus = 'Open' | 'In_Progress' | 'Resolved' | 'Cancelled';
-export type ServicePriority = 'Low' | 'Medium' | 'High';
+export type ServiceStatus = 'Open' | 'In Progress' | 'Resolved' | 'Cancelled';
+export type ServicePriority = 'Normal' | 'Medium' | 'High';
 
 export interface IServiceRequest extends Document {
     guestId: mongoose.Types.ObjectId;
@@ -23,12 +23,12 @@ const serviceRequestSchema = new Schema<IServiceRequest>(
         message: { type: String },
         priority: {
             type: String,
-            enum: ['Low', 'Medium', 'High'],
-            default: 'Medium',
+            enum: ['Normal', 'Medium', 'High'],
+            default: 'Normal',
         },
         status: {
             type: String,
-            enum: ['Open', 'In_Progress', 'Resolved', 'Cancelled'],
+            enum: ['Open', 'In Progress', 'Resolved', 'Cancelled'],
             default: 'Open',
         },
         handledBy: { type: Schema.Types.ObjectId, ref: 'Staff' },

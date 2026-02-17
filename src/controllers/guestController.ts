@@ -3,6 +3,7 @@ import asyncHandler from 'express-async-handler';
 import { Guest } from '../models/Guest.js';
 import { Room } from '../models/Room.js';
 import { socketService } from '../services/socketService.js';
+import { createNotification } from './notificationController.js';
 import { registerGuestSchema } from '../validation/schemas.js';
 import generateToken from '../utils/generateToken.js';
 
@@ -34,18 +35,16 @@ export const registerGuest = asyncHandler(async (req: Request, res: Response) =>
         isCheckedIn: false,
     });
 
-    // Generate token
-    const token = generateToken(res, (guest._id as any).toString());
-
     socketService.emit('guest-registered', guest);
 
+    // Don't generate token - guest must login after registration
     res.status(201).json({
         _id: guest._id,
         name: guest.name,
         email: guest.email,
         phone: guest.phone,
         isCheckedIn: guest.isCheckedIn,
-        token
+        message: 'Registration successful. Please login to continue.'
     });
 });
 
@@ -98,6 +97,27 @@ export const checkInGuest = asyncHandler(async (req: Request, res: Response) => 
         }
 
         socketService.emit('guest-checked-in', guest);
+
+        // Notify Receptionist
+        await createNotification(
+            `Guest Check-in Room ${guest.roomNumber}`,
+            `${guest.name} checked in to Room ${guest.roomNumber}.`,
+            'success',
+            'Receptionist',
+            undefined,
+            (guest._id as any).toString(),
+            `/dashboard/guests`
+        );
+        // Notify Admin
+        await createNotification(
+            `Guest Check-in Room ${guest.roomNumber}`,
+            `${guest.name} checked in to Room ${guest.roomNumber}.`,
+            'success',
+            'Admin',
+            undefined,
+            (guest._id as any).toString(),
+            `/dashboard/guests`
+        );
         res.status(201).json(guest);
     } catch (error: any) {
         console.error('Check-in Error Detailed:', error);
@@ -171,4 +191,102 @@ export const loginGuest = asyncHandler(async (req: Request, res: Response) => {
         res.status(401);
         throw new Error('Invalid email or password');
     }
+});
+
+// @desc    Guest Self-Check-in / Setup Stay
+// @route   POST /api/guests/setup-stay
+// @access  Private (Guest)
+export const setupStay = asyncHandler(async (req: Request, res: Response) => {
+    const { roomNumber, checkInDate, checkOutDate } = req.body;
+    const guestId = (req as any).user._id;
+
+    const guest = await Guest.findById(guestId);
+
+    if (!guest) {
+        res.status(404);
+        throw new Error('Guest not found');
+    }
+
+    // Check if room exists
+    const room = await Room.findOne({ roomNumber });
+    if (!room) {
+        res.status(404);
+        throw new Error('Room not found');
+    }
+
+    // Check if room is already occupied by someone else?
+    if (room.status === 'Occupied' && room.currentGuestId && room.currentGuestId.toString() !== guestId.toString()) {
+        const { force } = req.body;
+
+        if (!force) {
+            res.status(409).json({
+                message: 'Room is already occupied by another guest.',
+                roomNumber: room.roomNumber,
+                currentStatus: room.status
+            });
+            return;
+        }
+
+        // Force is true: Check out the previous guest
+        const previousGuest = await Guest.findById(room.currentGuestId);
+        if (previousGuest) {
+            previousGuest.isCheckedIn = false;
+            previousGuest.roomNumber = undefined;
+            await previousGuest.save();
+            socketService.emit('guest-checked-out', previousGuest);
+
+            // Notify about forced checkout
+            await createNotification(
+                `Force Checkout Room ${roomNumber}`,
+                `Guest ${previousGuest.name} was force checked out by ${guest.name}.`,
+                'warning',
+                'Admin',
+                undefined,
+                (previousGuest._id as any).toString(),
+                `/dashboard/guests`
+            );
+        }
+    }
+
+    // Update Guest
+    guest.roomNumber = roomNumber;
+    guest.checkInDate = new Date(checkInDate);
+    guest.checkOutDate = new Date(checkOutDate);
+    guest.isCheckedIn = true;
+    await guest.save();
+
+    // Update Room
+    room.status = 'Occupied';
+    room.currentGuestId = guest._id as any;
+    await room.save();
+
+    // Socket Emits
+    socketService.emit('room-status-changed', room);
+    socketService.emit('guest-checked-in', guest);
+
+    // Notifications
+    await createNotification(
+        `Self Check-in Room ${roomNumber}`,
+        `${guest.name} self check-in to Room ${roomNumber}.`,
+        'success',
+        'Receptionist',
+        undefined,
+        (guest._id as any).toString(),
+        `/dashboard/guests`
+    );
+
+    await createNotification(
+        `Self Check-in Room ${roomNumber}`,
+        `${guest.name} self check-in to Room ${roomNumber}.`,
+        'success',
+        'Admin',
+        undefined,
+        (guest._id as any).toString(),
+        `/dashboard/guests`
+    );
+
+    res.json({
+        message: 'Stay setup successfully',
+        guest
+    });
 });

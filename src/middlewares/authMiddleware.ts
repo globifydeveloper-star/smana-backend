@@ -43,11 +43,21 @@ const protect = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const admin = (req: Request, res: Response, next: NextFunction) => {
-    if (req.user && (req.user as any).role === 'Admin') {
+    if (req.user && ((req.user as any).role === 'Admin' || (req.user as any).role === 'Manager')) {
         next();
     } else {
         res.status(401).json({ message: 'Not authorized as an admin' });
     }
 };
 
-export { protect, admin };
+const authorize = (...roles: string[]) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        if (req.user && roles.includes((req.user as any).role)) {
+            next();
+        } else {
+            res.status(403).json({ message: `User role ${(req.user as any).role} is not authorized to access this route` });
+        }
+    };
+};
+
+export { protect, admin, authorize };

@@ -1,8 +1,10 @@
 import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import { Room } from '../models/Room.js';
+import { Guest } from '../models/Guest.js';
 import { createRoomSchema } from '../validation/schemas.js';
 import { socketService } from '../services/socketService.js';
+import { createNotification } from './notificationController.js';
 
 // @desc    Get all rooms
 // @route   GET /api/rooms
@@ -84,6 +86,44 @@ export const updateRoomStatus = asyncHandler(async (req: Request, res: Response)
         room.status = status;
         const updatedRoom = await room.save();
         socketService.emit('room-status-changed', updatedRoom);
+
+        // Notify Housekeeping if status involves cleaning or maintenance
+        if (status === 'Cleaning' || status === 'Maintenance') {
+            await createNotification(
+                `Room ${updatedRoom.roomNumber} Status Update`,
+                `Room ${updatedRoom.roomNumber} is now ${status}.`,
+                'info',
+                'Housekeeping',
+                undefined,
+                (updatedRoom._id as any).toString(),
+                `/dashboard/rooms`
+            );
+        }
+
+        // Auto-checkout Guest if status is set to Available
+        if (status === 'Available') {
+            // Find guest who was in this room (room.currentGuestId might be null now if we cleared it? No, wait)
+            // We need to handle this carefully.
+            // If we already saved the room with status='Available', we should also check if we need to clear the guest.
+            // Actually, `updateRoomStatus` (lines 80-107) just updates status.
+
+            // Check if there was a guest
+            if (room.currentGuestId) {
+                const guest = await Guest.findById(room.currentGuestId);
+                if (guest) {
+                    guest.isCheckedIn = false;
+                    guest.roomNumber = undefined;
+                    await guest.save();
+                    socketService.emit('guest-checked-out', guest);
+
+                    // Also clear room's currentGuestId
+                    updatedRoom.currentGuestId = undefined;
+                    await updatedRoom.save();
+                    socketService.emit('room-status-changed', updatedRoom);
+                }
+            }
+        }
+
         res.json(updatedRoom);
     } else {
         res.status(404);
