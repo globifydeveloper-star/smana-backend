@@ -18,6 +18,6 @@ router.route('/:id')
 
 router.route('/:id/status')
     // Allow Admin, Receptionist, Housekeeping, and Manager to update room status
-    .put(protect, authorize('Admin', 'Receptionist', 'Housekeeping', 'Manager'), updateRoomStatus);
+    .put(protect, authorize('Admin', 'Receptionist', 'Housekeeping', 'Manager', 'Front Office'), updateRoomStatus);
 
 export default router;

@@ -5,7 +5,7 @@ export interface IStaff extends Document {
     name: string;
     email: string;
     password?: string;
-    role: string; // 'Admin', 'Receptionist', 'Housekeeping', 'Chef'
+    role: string; // 'Admin', 'Receptionist', 'Housekeeping', 'Chef', 'IT', 'Front Office', 'Maintenance'
     isOnline: boolean;
     matchPassword(enteredPassword: string): Promise<boolean>;
 }
