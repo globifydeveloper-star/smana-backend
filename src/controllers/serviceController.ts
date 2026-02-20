@@ -76,8 +76,24 @@ export const getServiceRequests = asyncHandler(async (req: Request, res: Respons
 
     console.log('Get Service Requests - User:', user ? `${user._id} (Role: ${user.role})` : 'No User');
 
-    if (user && (!user.role || user.role === 'Guest')) {
-        query = { guestId: user._id };
+    // Role-based filtering
+    if (user) {
+        if (user.role === 'IT') {
+            query = { ...query, type: 'IT' };
+        } else if (user.role === 'Maintenance') {
+            query = { ...query, type: 'Maintenance' };
+        } else if (user.role === 'Housekeeping') {
+            query = { ...query, type: 'House Keeping & Laundry' };
+        } else if (user.role === 'Front Office') {
+            // Front Office sees all these types
+            query = { ...query, type: { $in: ['IT', 'Front Office', 'House Keeping & Laundry', 'Maintenance'] } };
+        }
+        // Admin and Manager see everything (no extra filter)
+
+        // Guest filtering (already handled above, but ensuring safety)
+        if (!user.role || user.role === 'Guest') {
+            query = { guestId: user._id };
+        }
     }
 
     console.log('Get Service Requests - Query:', JSON.stringify(query));
@@ -104,7 +120,20 @@ export const updateServiceRequestStatus = asyncHandler(async (req: Request, res:
         }
         const updatedRequest = await request.save();
         const populatedRequest = await updatedRequest.populate('guestId', 'name');
+
         socketService.emit('request-status-updated', populatedRequest);
+
+        // Create notification for the guest
+        await createNotification(
+            `Service Request Updated`,
+            `Your ${populatedRequest.type} request is now ${status}`,
+            'info',
+            undefined, // No role
+            populatedRequest.guestId._id.toString(), // Recipient ID
+            populatedRequest._id.toString(), // Reference ID
+            undefined // Link
+        );
+
         res.json(populatedRequest);
     } else {
         res.status(404);

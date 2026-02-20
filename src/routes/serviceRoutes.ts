@@ -10,9 +10,9 @@ const router = express.Router();
 
 router.route('/')
     .post(protect, createServiceRequest)
-    .get(protect, authorize('Admin', 'Receptionist', 'Housekeeping', 'Manager'), getServiceRequests); // Staff
+    .get(protect, getServiceRequests); // Open to all authenticated users (Guests & Staff)
 
 router.route('/:id/status')
-    .put(protect, authorize('Admin', 'Receptionist', 'Housekeeping', 'Manager'), updateServiceRequestStatus); // Staff
+    .put(protect, authorize('Admin', 'Receptionist', 'Housekeeping', 'Manager', 'IT', 'Front Office', 'Maintenance'), updateServiceRequestStatus); // Staff
 
 export default router;

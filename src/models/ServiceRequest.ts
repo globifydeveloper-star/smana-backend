@@ -6,7 +6,7 @@ export type ServicePriority = 'Normal' | 'Medium' | 'High';
 export interface IServiceRequest extends Document {
     guestId: mongoose.Types.ObjectId;
     roomNumber: string;
-    type: string; // e.g., 'Housekeeping', 'Concierge', 'Maintenance'
+    type: string; // e.g., 'Housekeeping', 'Concierge', 'Maintenance', 'IT', 'Front Office'
     message?: string;
     priority: ServicePriority;
     status: ServiceStatus;
