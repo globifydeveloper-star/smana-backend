@@ -31,6 +31,12 @@ const protect = async (req: Request, res: Response, next: NextFunction) => {
                 throw new Error('Not authorized, user not found');
             }
 
+            // Check if user is blocked (only for Guests)
+            if ('isBlocked' in user && user.isBlocked) {
+                res.status(403);
+                throw new Error('Your account has been blocked. Please contact support.');
+            }
+
             req.user = user;
             next();
         } catch (error) {

@@ -12,6 +12,7 @@ export interface IGuest extends Document {
     createdAt: Date;
     updatedAt: Date;
     matchPassword(enteredPassword: string): Promise<boolean>;
+    isBlocked: boolean;
 }
 
 const guestSchema = new Schema<IGuest>(
@@ -24,6 +25,7 @@ const guestSchema = new Schema<IGuest>(
         isCheckedIn: { type: Boolean, default: false },
         checkInDate: { type: Date },
         checkOutDate: { type: Date },
+        isBlocked: { type: Boolean, default: false },
     },
     { timestamps: true }
 );

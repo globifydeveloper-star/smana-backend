@@ -6,6 +6,7 @@ import {
     loginGuest,
     registerGuest,
     setupStay,
+    toggleBlockStatus,
 } from '../controllers/guestController.js';
 import { protect } from '../middlewares/authMiddleware.js';
 
@@ -20,5 +21,6 @@ router.route('/')
     .post(protect, checkInGuest); // Staff determines checkin
 
 router.post('/check-out/:id', protect, checkOutGuest);
+router.patch('/:id/block', protect, toggleBlockStatus);
 
 export default router;

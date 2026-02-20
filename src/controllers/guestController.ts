@@ -175,6 +175,11 @@ export const loginGuest = asyncHandler(async (req: Request, res: Response) => {
     const guest = await Guest.findOne({ email });
 
     if (guest && (await guest.matchPassword(password))) {
+        if (guest.isBlocked) {
+            res.status(403);
+            throw new Error('Your account has been blocked. Please contact support.');
+        }
+
         const token = generateToken(res, (guest._id as any).toString());
         res.json({
             _id: guest._id,
@@ -288,5 +293,38 @@ export const setupStay = asyncHandler(async (req: Request, res: Response) => {
     res.json({
         message: 'Stay setup successfully',
         guest
+    });
+});
+
+// @desc    Block or Unblock a guest
+// @route   PATCH /api/guests/:id/block
+// @access  Private/Staff/Admin
+export const toggleBlockStatus = asyncHandler(async (req: Request, res: Response) => {
+    const guest = await Guest.findById(req.params.id);
+
+    if (!guest) {
+        res.status(404);
+        throw new Error('Guest not found');
+    }
+
+    guest.isBlocked = !guest.isBlocked;
+    // If we are blocking, force checkout if they are checked in?
+    // Requirement says: "blocked users should not be able to access the app".
+    // It doesn't explicitly say check them out, but it might be good practice.
+    // For now, let's stick to just blocking access via the middleware.
+    // If they are checked in, they remain checked in but can't do anything.
+
+    await guest.save();
+
+    // Emit real-time socket event so active mobile sessions can react immediately
+    if (guest.isBlocked) {
+        socketService.emit('guest-blocked', { guestId: (guest._id as any).toString(), isBlocked: true });
+    } else {
+        socketService.emit('guest-unblocked', { guestId: (guest._id as any).toString(), isBlocked: false });
+    }
+
+    res.json({
+        message: `Guest ${guest.isBlocked ? 'blocked' : 'unblocked'} successfully`,
+        isBlocked: guest.isBlocked
     });
 });
