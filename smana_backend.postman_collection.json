@@ -1,17 +1,42 @@
 {
   "info": {
     "name": "Smana Backend API",
+    "description": "Complete API reference for Smana Hotel Management Backend.\n\n**Variables to set:**\n- `base_url`: e.g. `https://api.smanahotels.com` or `http://localhost:5000`\n- `token`: JWT token from Guest Login or Staff Login response\n- `admin_api_key`: Admin API key for admin-only routes",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admin_api_key",
+      "value": "",
+      "type": "string"
+    }
+  ],
   "item": [
     {
-      "name": "/api/auth",
+      "name": "🔐 Auth (Staff)",
+      "description": "Staff/Admin login and logout. Roles: Admin, Manager, Receptionist, Chef, Housekeeping, IT, Front Office, Maintenance",
       "item": [
         {
-          "name": "POST /api/auth/login",
+          "name": "POST Staff Login",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/auth/login",
               "host": [
@@ -23,15 +48,35 @@
                 "login"
               ]
             },
-            "description": "From authRoutes.ts"
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@smana.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Login as a staff member. Returns JWT token in cookie + user info.\n\n**Roles Available:** Admin, Manager, Receptionist, Chef, Housekeeping, IT, Front Office, Maintenance"
           },
           "response": []
         },
         {
-          "name": "POST /api/auth/logout",
+          "name": "POST Staff Logout",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/auth/logout",
               "host": [
@@ -43,375 +88,27 @@
                 "logout"
               ]
             },
-            "description": "From authRoutes.ts"
+            "description": "Clears JWT cookie and logs out the staff member. Requires authentication."
           },
           "response": []
         }
       ]
     },
     {
-      "name": "/api/rooms",
+      "name": "👤 Guests (Mobile App)",
+      "description": "Guest registration, login, check-in, setup stay, and checkout for the mobile app.",
       "item": [
         {
-          "name": "GET /api/rooms/",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/rooms/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "rooms"
-              ]
-            },
-            "description": "From roomRoutes.ts"
-          },
-          "response": []
-        },
-        {
-          "name": "POST /api/rooms/",
+          "name": "POST Guest Register",
           "request": {
             "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/rooms/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "rooms"
-              ]
-            },
-            "description": "From roomRoutes.ts"
-          },
-          "response": []
-        },
-        {
-          "name": "GET /api/rooms/:id",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/rooms/:id",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "rooms",
-                ":id"
-              ]
-            },
-            "description": "From roomRoutes.ts"
-          },
-          "response": []
-        },
-        {
-          "name": "PUT /api/rooms/:id/status",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/rooms/:id/status",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "rooms",
-                ":id",
-                "status"
-              ]
-            },
-            "description": "From roomRoutes.ts"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "/api/menu",
-      "item": [
-        {
-          "name": "GET /api/menu/admin",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/menu/admin",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "menu",
-                "admin"
-              ]
-            },
-            "description": "From menuRoutes.ts"
-          },
-          "response": []
-        },
-        {
-          "name": "GET /api/menu/",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/menu/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "menu"
-              ]
-            },
-            "description": "From menuRoutes.ts"
-          },
-          "response": []
-        },
-        {
-          "name": "POST /api/menu/",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/menu/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "menu"
-              ]
-            },
-            "description": "From menuRoutes.ts"
-          },
-          "response": []
-        },
-        {
-          "name": "PUT /api/menu/:id",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/menu/:id",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "menu",
-                ":id"
-              ]
-            },
-            "description": "From menuRoutes.ts"
-          },
-          "response": []
-        },
-        {
-          "name": "DELETE /api/menu/:id",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/menu/:id",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "menu",
-                ":id"
-              ]
-            },
-            "description": "From menuRoutes.ts"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "/api/orders",
-      "item": [
-        {
-          "name": "GET /api/orders/my",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/orders/my",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "orders",
-                "my"
-              ]
-            },
-            "description": "From orderRoutes.ts"
-          },
-          "response": []
-        },
-        {
-          "name": "POST /api/orders/",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/orders/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "orders"
-              ]
-            },
-            "description": "From orderRoutes.ts"
-          },
-          "response": []
-        },
-        {
-          "name": "GET /api/orders/",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/orders/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "orders"
-              ]
-            },
-            "description": "From orderRoutes.ts"
-          },
-          "response": []
-        },
-        {
-          "name": "PUT /api/orders/:id/status",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/orders/:id/status",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "orders",
-                ":id",
-                "status"
-              ]
-            },
-            "description": "From orderRoutes.ts"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "/api/service-requests",
-      "item": [
-        {
-          "name": "POST /api/service-requests/",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/service-requests/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "service-requests"
-              ]
-            },
-            "description": "From serviceRoutes.ts"
-          },
-          "response": []
-        },
-        {
-          "name": "GET /api/service-requests/",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/service-requests/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "service-requests"
-              ]
-            },
-            "description": "From serviceRoutes.ts"
-          },
-          "response": []
-        },
-        {
-          "name": "PUT /api/service-requests/:id/status",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/service-requests/:id/status",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "service-requests",
-                ":id",
-                "status"
-              ]
-            },
-            "description": "From serviceRoutes.ts"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "/api/guests",
-      "item": [
-        {
-          "name": "POST /api/guests/login",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/guests/login",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "guests",
-                "login"
-              ]
-            },
-            "description": "From guestRoutes.ts"
-          },
-          "response": []
-        },
-        {
-          "name": "POST /api/guests/register",
-          "request": {
-            "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/guests/register",
               "host": [
@@ -423,15 +120,179 @@
                 "register"
               ]
             },
-            "description": "From guestRoutes.ts"
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"+911234567890\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Register a new guest account.\n\n**Note:** Registration does NOT return a token. Guest must login separately after registration."
           },
           "response": []
         },
         {
-          "name": "POST /api/guests/check-out/:id",
+          "name": "POST Guest Login",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/guests/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "guests",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Login as a guest. Returns JWT token, check-in status, room details, and stay dates.\n\n**Response includes:** `_id`, `name`, `email`, `roomNumber`, `isCheckedIn`, `checkInDate`, `checkOutDate`, `token`"
+          },
+          "response": []
+        },
+        {
+          "name": "POST Guest Setup Stay (Self Check-in)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/guests/setup-stay",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "guests",
+                "setup-stay"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomNumber\": \"101\",\n  \"checkInDate\": \"2026-02-20T10:00:00.000Z\",\n  \"checkOutDate\": \"2026-02-23T11:00:00.000Z\",\n  \"force\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Guest self check-in: set room number and stay dates.\n\n**Fields:**\n- `roomNumber` (required): Room to check into\n- `checkInDate` (required): ISO 8601 date string\n- `checkOutDate` (required): Calculated from check-in + stay duration (in days) entered in the mobile app\n- `force` (optional, default false): If `true`, forces check-in even if room is occupied by another guest (admin override)\n\n**Triggers:** Socket event `guest-checked-in`, notifications to Admin & Receptionist."
+          },
+          "response": []
+        },
+        {
+          "name": "GET All Guests (Staff)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/guests",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "guests"
+              ]
+            },
+            "description": "Get all registered guests. For staff/admin use. Returns array sorted by last updated."
+          },
+          "response": []
+        },
+        {
+          "name": "POST Staff Check-in Guest (Admin/Receptionist)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/guests",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "guests"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Smith\",\n  \"email\": \"jane@example.com\",\n  \"phone\": \"+919876543210\",\n  \"roomNumber\": \"202\",\n  \"checkOutDate\": \"2026-02-25T12:00:00.000Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Admin/Staff manually check-in a guest. Creates guest if not found, or updates existing.\n\n**Triggers:** Room status set to `Occupied`, socket events, notifications to Admin & Receptionist."
+          },
+          "response": []
+        },
+        {
+          "name": "POST Guest Checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/guests/check-out/:id",
               "host": [
@@ -444,84 +305,761 @@
                 ":id"
               ]
             },
-            "description": "From guestRoutes.ts"
-          },
-          "response": []
-        },
-        {
-          "name": "GET /api/guests/",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/guests/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "guests"
-              ]
-            },
-            "description": "From guestRoutes.ts"
-          },
-          "response": []
-        },
-        {
-          "name": "POST /api/guests/",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/guests/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "guests"
-              ]
-            },
-            "description": "From guestRoutes.ts"
+            "description": "Check out a guest by their ID. Sets `isCheckedIn = false`, clears room number, and sets room status to `Cleaning`.\n\n**URL Param:** `:id` = Guest MongoDB `_id`\n\n**Triggers:** Socket event `guest-checked-out`, room status → `Cleaning`."
           },
           "response": []
         }
       ]
     },
     {
-      "name": "/api/upload",
+      "name": "🏨 Rooms",
+      "description": "Room management: CRUD and status updates.",
       "item": [
         {
-          "name": "POST /api/upload/",
+          "name": "GET All Rooms",
           "request": {
-            "method": "POST",
-            "header": [],
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
             "url": {
-              "raw": "{{base_url}}/api/upload/",
+              "raw": "{{base_url}}/api/rooms?page=1&limit=50",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
-                "upload"
+                "rooms"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
               ]
             },
-            "description": "From uploadRoutes.ts"
+            "description": "Get all rooms with pagination. Sorted by room number.\n\n**Query Params:** `page`, `limit`\n**Access:** All authenticated staff and guests."
+          },
+          "response": []
+        },
+        {
+          "name": "POST Create Room (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/rooms",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "rooms"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomNumber\": \"301\",\n  \"type\": \"Deluxe\",\n  \"floor\": 3,\n  \"status\": \"Available\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Create a new room. Admin only.\n\n**Status values:** `Available`, `Occupied`, `Cleaning`, `Maintenance`"
+          },
+          "response": []
+        },
+        {
+          "name": "GET Room by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/rooms/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                ":id"
+              ]
+            },
+            "description": "Get a single room by MongoDB `_id`."
+          },
+          "response": []
+        },
+        {
+          "name": "PUT Update Room Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/rooms/:id/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                ":id",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Cleaning\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Update a room's status.\n\n**Status values:** `Available`, `Occupied`, `Cleaning`, `Maintenance`\n\n**Access:** Admin, Receptionist, Housekeeping, Manager, Front Office\n\n**Side effects:**\n- `Cleaning` / `Maintenance` → notifies Housekeeping\n- `Available` → auto-checks out the current guest if any\n\n**Triggers:** Socket event `room-status-changed`."
           },
           "response": []
         }
       ]
     },
     {
-      "name": "/api/staff",
+      "name": "🍽️ Menu",
+      "description": "Food menu management. Public read, admin/chef write.",
       "item": [
         {
-          "name": "GET /api/staff/",
+          "name": "GET Menu (Public)",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/api/staff/",
+              "raw": "{{base_url}}/api/menu",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "menu"
+              ]
+            },
+            "description": "Get all available menu items. Public route - no authentication required."
+          },
+          "response": []
+        },
+        {
+          "name": "GET Menu Admin View",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/menu/admin",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "menu",
+                "admin"
+              ]
+            },
+            "description": "Get all menu items including unavailable ones. For admin/chef views.\n\n**Access:** Admin, Chef, Manager"
+          },
+          "response": []
+        },
+        {
+          "name": "POST Create Menu Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/menu",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "menu"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Chicken Biryani",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Aromatic basmati rice with spiced chicken",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "250",
+                  "type": "text"
+                },
+                {
+                  "key": "category",
+                  "value": "Main Course",
+                  "type": "text"
+                },
+                {
+                  "key": "isAvailable",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "src": "",
+                  "type": "file"
+                }
+              ]
+            },
+            "description": "Create a new menu item. Supports image upload via Cloudinary (multipart/form-data).\n\n**Access:** Admin, Chef, Manager"
+          },
+          "response": []
+        },
+        {
+          "name": "PUT Update Menu Item",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/menu/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "menu",
+                ":id"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Chicken Biryani (Updated)",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "275",
+                  "type": "text"
+                },
+                {
+                  "key": "isAvailable",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "src": "",
+                  "type": "file"
+                }
+              ]
+            },
+            "description": "Update an existing menu item. Supports image upload.\n\n**Access:** Admin, Chef, Manager"
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE Delete Menu Item",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/menu/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "menu",
+                ":id"
+              ]
+            },
+            "description": "Delete a menu item by ID.\n\n**Access:** Admin, Chef, Manager"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📦 Orders",
+      "description": "Food order management. Guests place orders, staff manage status.",
+      "item": [
+        {
+          "name": "POST Place Order (Guest)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"menuItemId\": \"<menu_item_id>\",\n      \"quantity\": 2\n    }\n  ],\n  \"roomNumber\": \"101\",\n  \"specialInstructions\": \"No spice please\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Guest places a food order.\n\n**Triggers:** Socket event for new order, notification to Chef & Admin."
+          },
+          "response": []
+        },
+        {
+          "name": "GET All Orders (Staff)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders"
+              ]
+            },
+            "description": "Get all food orders. Staff view.\n\n**Access:** Admin, Chef, Receptionist, Manager"
+          },
+          "response": []
+        },
+        {
+          "name": "GET My Orders (Guest)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/my",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "my"
+              ]
+            },
+            "description": "Get orders placed by the currently logged-in guest."
+          },
+          "response": []
+        },
+        {
+          "name": "PUT Update Order Status (Staff)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/:id/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                ":id",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Preparing\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Update the status of a food order.\n\n**Status values:** `Pending`, `Preparing`, `Ready`, `Delivered`, `Cancelled`\n\n**Access:** Admin, Chef, Receptionist, Manager\n\n**Triggers:** Push notification to guest, socket event."
+          },
+          "response": []
+        },
+        {
+          "name": "POST Cleanup Pending Orders (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/cleanup-pending",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "cleanup-pending"
+              ]
+            },
+            "description": "Cancels stale pending orders that were never paid. Admin only."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔧 Service Requests",
+      "description": "Guest service requests. Role-based filtering applied on GET.",
+      "item": [
+        {
+          "name": "POST Create Service Request (Guest)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/service-requests",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "service-requests"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomNumber\": \"101\",\n  \"type\": \"House Keeping & Laundry\",\n  \"priority\": \"Normal\",\n  \"message\": \"Please clean the room\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Guest creates a service request.\n\n**Type values:** `House Keeping & Laundry`, `Maintenance`, `IT`, `Front Office`\n**Priority values:** `Normal`, `High`, `Urgent`\n**Status (auto-set):** `Open`\n\n**Triggers:** Notifications to Housekeeping and Admin."
+          },
+          "response": []
+        },
+        {
+          "name": "GET Service Requests (Role-filtered)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/service-requests",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "service-requests"
+              ]
+            },
+            "description": "Get service requests. **Role-based filtering:**\n- `IT` → only IT requests\n- `Maintenance` → only Maintenance requests\n- `Housekeeping` → only House Keeping & Laundry requests\n- `Front Office` → IT, Front Office, House Keeping & Laundry, Maintenance\n- `Admin` / `Manager` → all requests\n- `Guest` (no role) → only their own requests"
+          },
+          "response": []
+        },
+        {
+          "name": "PUT Update Service Request Status (Staff)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/service-requests/:id/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "service-requests",
+                ":id",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"In Progress\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Update status of a service request.\n\n**Status values:** `Open`, `In Progress`, `Resolved`, `Cancelled`\n\n**Access:** Admin, Receptionist, Housekeeping, Manager, IT, Front Office, Maintenance\n\n**Triggers:** Notification to the guest who made the request, socket event."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔔 Notifications",
+      "description": "Real-time in-app notifications. Delivered via Socket.IO and stored in DB.",
+      "item": [
+        {
+          "name": "GET My Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/notifications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "notifications"
+              ]
+            },
+            "description": "Get the last 50 notifications for the current user.\n\n**Filtering:** Returns notifications targeted to the user's ID or their role.\n\n**Notification types:** `info`, `warning`, `success`, `error`\n\n**Triggers (when notifications are created):**\n- Guest check-in (self or staff)\n- Force checkout\n- Room status change (Cleaning/Maintenance)\n- New service request\n- Service request status update\n- New food order (chef/admin)\n- Order status update (guest)"
+          },
+          "response": []
+        },
+        {
+          "name": "PUT Mark Notification as Read",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/notifications/:id/read",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                ":id",
+                "read"
+              ]
+            },
+            "description": "Mark a specific notification as read by its ID.\n\n**URL Param:** `:id` = Notification MongoDB `_id`"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "👥 Staff",
+      "description": "Staff management. Admin creates, all authenticated users can list.",
+      "item": [
+        {
+          "name": "GET All Staff",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/staff",
               "host": [
                 "{{base_url}}"
               ],
@@ -530,17 +1068,28 @@
                 "staff"
               ]
             },
-            "description": "From staffRoutes.ts"
+            "description": "Get all staff members. Password is excluded from response."
           },
           "response": []
         },
         {
-          "name": "POST /api/staff/",
+          "name": "POST Create Staff Member (Admin)",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
             "url": {
-              "raw": "{{base_url}}/api/staff/",
+              "raw": "{{base_url}}/api/staff",
               "host": [
                 "{{base_url}}"
               ],
@@ -549,20 +1098,126 @@
                 "staff"
               ]
             },
-            "description": "From staffRoutes.ts"
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ali Hassan\",\n  \"email\": \"ali@smana.com\",\n  \"password\": \"password123\",\n  \"role\": \"Receptionist\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Create a new staff member.\n\n**Role values:** `Admin`, `Manager`, `Receptionist`, `Chef`, `Housekeeping`, `IT`, `Front Office`, `Maintenance`"
           },
           "response": []
         }
       ]
     },
     {
-      "name": "/api/payments",
+      "name": "⭐ Feedback",
+      "description": "Guest feedback submission and admin review.",
       "item": [
         {
-          "name": "POST /api/payments/checkout",
+          "name": "POST Submit Feedback (Guest)",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/feedbacks",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "feedbacks"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"description\": \"Excellent service and clean rooms!\",\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"+911234567890\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Submit feedback. Guest must be checked into a room.\n\n**Note:** `name`, `email`, `phone` auto-filled from profile if not provided. `roomNumber` always taken from the authenticated user's profile."
+          },
+          "response": []
+        },
+        {
+          "name": "GET All Feedbacks (Admin/Staff)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/feedbacks?page=1&limit=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "feedbacks"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all guest feedbacks with pagination. Admin only.\n\n**Query Params:** `page`, `limit`"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "💳 Payments (HyperPay)",
+      "description": "Payment processing via HyperPay gateway.",
+      "item": [
+        {
+          "name": "POST Create Checkout Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/payments/checkout",
               "host": [
@@ -574,15 +1229,35 @@
                 "checkout"
               ]
             },
-            "description": "From paymentRoutes.ts"
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"<order_id>\",\n  \"amount\": 250,\n  \"currency\": \"AED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Create a HyperPay checkout session for an order."
           },
           "response": []
         },
         {
-          "name": "GET /api/payments/status/:checkoutId",
+          "name": "GET Payment Status",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/payments/status/:checkoutId",
               "host": [
@@ -595,15 +1270,21 @@
                 ":checkoutId"
               ]
             },
-            "description": "From paymentRoutes.ts"
+            "description": "Get the payment status for a HyperPay checkout by `checkoutId`."
           },
           "response": []
         },
         {
-          "name": "POST /api/payments/callback/:orderId",
+          "name": "POST Payment Callback",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/payments/callback/:orderId",
               "host": [
@@ -616,15 +1297,26 @@
                 ":orderId"
               ]
             },
-            "description": "From paymentRoutes.ts"
+            "description": "Webhook callback from HyperPay after payment completes. Updates order payment status."
           },
           "response": []
         },
         {
-          "name": "POST /api/payments/registration",
+          "name": "POST Create Registration (Card Save)",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/payments/registration",
               "host": [
@@ -636,15 +1328,35 @@
                 "registration"
               ]
             },
-            "description": "From paymentRoutes.ts"
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 250,\n  \"currency\": \"AED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Create a HyperPay registration for saved card payments."
           },
           "response": []
         },
         {
-          "name": "GET /api/payments/registration/:checkoutId",
+          "name": "GET Registration Status",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/payments/registration/:checkoutId",
               "host": [
@@ -657,15 +1369,26 @@
                 ":checkoutId"
               ]
             },
-            "description": "From paymentRoutes.ts"
+            "description": "Get the status of a HyperPay registration."
           },
           "response": []
         },
         {
-          "name": "POST /api/payments/token",
+          "name": "POST Get Payment Token",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/payments/token",
               "host": [
@@ -677,50 +1400,221 @@
                 "token"
               ]
             },
-            "description": "From paymentRoutes.ts"
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"registrationId\": \"<registration_id>\",\n  \"amount\": 250\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Get a payment token for a saved card (recurring/token payment)."
           },
           "response": []
         }
       ]
     },
     {
-      "name": "/api/feedbacks",
+      "name": "📤 Upload",
+      "description": "File upload to Cloudinary.",
       "item": [
         {
-          "name": "POST /api/feedbacks/",
+          "name": "POST Upload Image",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
             "url": {
-              "raw": "{{base_url}}/api/feedbacks/",
+              "raw": "{{base_url}}/api/upload",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
-                "feedbacks"
+                "upload"
               ]
             },
-            "description": "From feedbackRoutes.ts"
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "src": "",
+                  "type": "file"
+                }
+              ]
+            },
+            "description": "Upload a single image to Cloudinary. Returns the Cloudinary URL."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🛡️ Admin (Payment Admin)",
+      "description": "Admin-only routes for payment order management. Secured with `x-admin-api-key` header instead of JWT.",
+      "item": [
+        {
+          "name": "GET All Orders (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-admin-api-key",
+                "value": "{{admin_api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/orders?status=&paymentStatus=&page=1&limit=20&sortBy=createdAt&sortOrder=desc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": ""
+                },
+                {
+                  "key": "paymentStatus",
+                  "value": ""
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "createdAt"
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "desc"
+                }
+              ]
+            },
+            "description": "Get all orders with filters and pagination.\n\n**Auth:** `x-admin-api-key` header required\n**Query Params:** `status`, `paymentStatus`, `page`, `limit`, `sortBy`, `sortOrder`"
           },
           "response": []
         },
         {
-          "name": "GET /api/feedbacks/",
+          "name": "GET Single Order (Admin)",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "x-admin-api-key",
+                "value": "{{admin_api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
             "url": {
-              "raw": "{{base_url}}/api/feedbacks/",
+              "raw": "{{base_url}}/api/admin/orders/:id",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
-                "feedbacks"
+                "admin",
+                "orders",
+                ":id"
               ]
             },
-            "description": "From feedbackRoutes.ts"
+            "description": "Get full order details including guest info.\n\n**Auth:** `x-admin-api-key` header required"
+          },
+          "response": []
+        },
+        {
+          "name": "POST Resync Order with HyperPay",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-admin-api-key",
+                "value": "{{admin_api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/orders/:id/resync",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "orders",
+                ":id",
+                "resync"
+              ]
+            },
+            "description": "Re-query HyperPay for latest payment status and sync the order.\n\n**Auth:** `x-admin-api-key` header required\n**Use case:** Fix orders stuck in `pending` payment status."
+          },
+          "response": []
+        },
+        {
+          "name": "GET Payment Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-admin-api-key",
+                "value": "{{admin_api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/stats",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "stats"
+              ]
+            },
+            "description": "Get payment statistics grouped by payment status + 10 most recent orders.\n\n**Auth:** `x-admin-api-key` header required"
           },
           "response": []
         }
