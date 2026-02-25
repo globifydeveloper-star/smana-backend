@@ -31,6 +31,7 @@ import staffRoutes from './routes/staffRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import feedbackRoutes from './routes/feedbackRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
+import pushRoutes from './routes/pushRoutes.js';
 
 dotenv.config();
 
@@ -81,6 +82,7 @@ app.use('/api/staff', staffRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/feedbacks', feedbackRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/push', pushRoutes);
 
 app.get('/', (req, res) => {
     res.send('API is running...');

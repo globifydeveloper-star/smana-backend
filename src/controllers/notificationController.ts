@@ -2,15 +2,13 @@ import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import { Notification } from '../models/Notification.js';
 import { socketService } from '../services/socketService.js';
+import { sendPushToRole, sendPushToUser, type PushPayload } from '../services/pushService.js';
 
 // @desc    Get notifications for logged in user
 // @route   GET /api/notifications
 // @access  Private
 export const getNotifications = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user?._id;
-    // Assuming req.user has role. We need to cast or access it safely.
-    // In authMiddleware or authController, we populate these.
-    // Let's assume req.user is populated with IStaff interface logic
     const userRole = (req.user as any).role;
 
     if (!userId) {
@@ -18,14 +16,10 @@ export const getNotifications = asyncHandler(async (req: Request, res: Response)
         throw new Error('Not authorized');
     }
 
-    // Find notifications that are either for this specific user OR for their role
     const notifications = await Notification.find({
         $or: [
             { recipient: userId },
             { role: userRole },
-            { role: 'Admin' } // Admin sees everything? Or should we duplicate triggers?
-            // Actually, usually we want explicit notifications.
-            // But if we broadcast to "Admin", the user with role "Admin" should see it.
         ]
     }).sort({ createdAt: -1 }).limit(50);
 
@@ -48,7 +42,34 @@ export const markAsRead = asyncHandler(async (req: Request, res: Response) => {
     }
 });
 
-// Helper function to create notification internally
+// @desc    Mark ALL notifications as read for the logged-in user
+// @route   PUT /api/notifications/read-all
+// @access  Private
+export const markAllAsRead = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user?._id;
+    const userRole = (req.user as any).role;
+
+    await Notification.updateMany(
+        {
+            $or: [{ recipient: userId }, { role: userRole }],
+            isRead: false,
+        },
+        { isRead: true }
+    );
+
+    res.json({ message: 'All notifications marked as read' });
+});
+
+// ---------------------------------------------------------------------------
+// Helper: createNotification
+// Creates a DB notification, emits via socket, AND sends a Web Push.
+//
+// Role-based push routing mirrors the current socket room logic:
+//   - If `role` is provided  → push to all subscribers of that role
+//   - If `recipientId`       → push to that specific user (guest status updates etc.)
+//   - Admin/Manager always receive ALL role-based pushes (done in each controller
+//     by calling createNotification twice — once for the specific role, once for Admin)
+// ---------------------------------------------------------------------------
 export const createNotification = async (
     title: string,
     message: string,
@@ -56,7 +77,8 @@ export const createNotification = async (
     role?: string,
     recipientId?: string,
     referenceId?: string,
-    link?: string
+    link?: string,
+    pushPayload?: Partial<PushPayload>   // Optional override for push content
 ) => {
     const notification = await Notification.create({
         title,
@@ -68,13 +90,34 @@ export const createNotification = async (
         link
     });
 
-    // Emit socket event
+    // ── Socket emit ────────────────────────────────────────────────────────
     if (role) {
         socketService.emit('notification', notification, `role:${role}`);
     } else if (recipientId) {
-        // We'd need to map userId to socketId or have a room for userId
-        // For now, let's assume we might have a room for `user:${userId}`
         socketService.emit('notification', notification, `user:${recipientId}`);
+    }
+
+    // ── Web Push ──────────────────────────────────────────────────────────
+    // Push payload falls back to the notification title/message if not overridden
+    const push: PushPayload = {
+        title: pushPayload?.title ?? title,
+        body: pushPayload?.body ?? message,
+        icon: pushPayload?.icon ?? '/icon-192.png',
+        badge: '/icon-96.png',
+        tag: pushPayload?.tag ?? referenceId,
+        url: pushPayload?.url ?? link ?? '/dashboard',
+        data: pushPayload?.data,
+    };
+
+    try {
+        if (role) {
+            await sendPushToRole(role, push);
+        } else if (recipientId) {
+            await sendPushToUser(recipientId, push);
+        }
+    } catch (err) {
+        // Push failures must never crash the main request flow
+        console.error('[Push] Failed to send push notification:', err);
     }
 
     return notification;

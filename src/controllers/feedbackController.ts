@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import { Feedback } from '../models/Feedback.js';
+import { socketService } from '../services/socketService.js';
+import { createNotification } from './notificationController.js';
 
 // @desc    Submit feedback
 // @route   POST /api/feedbacks
@@ -14,11 +16,6 @@ export const createFeedback = asyncHandler(async (req: Request, res: Response) =
         throw new Error('Please provide a rating and description');
     }
 
-    // Auto-fill from authenticated user if not provided, but allow overrides/manual entry if needed?
-    // User requested autofill, which usually means frontend sends it or backend infers it.
-    // We will trust the body first (editable fields), fallback to user profile.
-
-    // Security: Ensure roomNumber comes from the authenticated user
     const roomNumber = user.roomNumber;
     if (!roomNumber) {
         res.status(400);
@@ -35,6 +32,26 @@ export const createFeedback = asyncHandler(async (req: Request, res: Response) =
         description,
     });
 
+    // Emit real-time socket event for open admin tabs
+    socketService.emit('new-feedback', feedback);
+
+    // Notify Admin + Manager via socket notification AND Web Push
+    await createNotification(
+        `New Feedback — Room ${roomNumber}`,
+        `${user.name} left a ${rating}★ review: "${description.slice(0, 60)}…"`,
+        rating >= 4 ? 'success' : rating >= 3 ? 'info' : 'warning',
+        'Admin',
+        undefined,
+        (feedback._id as any).toString(),
+        `/dashboard/feedback`,
+        {
+            title: `⭐ New Guest Feedback`,
+            body: `Room ${roomNumber} · ${rating}/5 stars`,
+            url: '/dashboard/feedback',
+            tag: 'new-feedback',
+        }
+    );
+
     res.status(201).json(feedback);
 });
 
@@ -42,7 +59,6 @@ export const createFeedback = asyncHandler(async (req: Request, res: Response) =
 // @route   GET /api/feedbacks
 // @access  Private (Staff/Admin)
 export const getFeedbacks = asyncHandler(async (req: Request, res: Response) => {
-    // Pagination defaults
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 20;
     const skip = (page - 1) * limit;
