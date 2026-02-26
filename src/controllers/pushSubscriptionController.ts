@@ -70,3 +70,47 @@ export const getMySubscriptions = asyncHandler(async (req: Request, res: Respons
         .sort({ createdAt: -1 });
     res.json(subs);
 });
+
+// @desc    Count all subscriptions in the DB — quick health check
+// @route   GET /api/push/count
+// @access  Private/Admin
+export const countSubscriptions = asyncHandler(async (req: Request, res: Response) => {
+    const total = await PushSubscriptionModel.countDocuments();
+    const byRole = await PushSubscriptionModel.aggregate([
+        { $group: { _id: '$role', count: { $sum: 1 } } }
+    ]);
+    const vapidConfigured = !!(process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY);
+    res.json({
+        total,
+        byRole,
+        vapidConfigured,
+        message: vapidConfigured
+            ? '✅ VAPID keys are set on this server'
+            : '❌ VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY are NOT set — push will not work!'
+    });
+});
+
+// @desc    Send a test push to yourself — verifies the full push chain
+// @route   POST /api/push/test
+// @access  Private
+export const sendTestPush = asyncHandler(async (req: Request, res: Response) => {
+    const user = req.user as any;
+    const { sendPushToUser } = await import('../services/pushService.js');
+
+    await sendPushToUser(user._id.toString(), {
+        title: '✅ Push Test',
+        body: `Hello ${user.name || user.email}! Push notifications are working correctly.`,
+        icon: '/icon-192.png',
+        url: '/dashboard',
+        tag: 'push-test',
+    });
+
+    const subCount = await PushSubscriptionModel.countDocuments({ userId: user._id });
+    res.json({
+        message: `Test push sent to ${subCount} subscription(s) for your account`,
+        subscriptionCount: subCount,
+        tip: subCount === 0
+            ? 'No subscriptions found for your account. Log out, log back in, and allow notifications.'
+            : 'Check your browser/OS for the test notification.',
+    });
+});

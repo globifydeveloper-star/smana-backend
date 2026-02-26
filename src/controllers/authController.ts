@@ -19,7 +19,7 @@ export const loginStaff = asyncHandler(async (req: Request, res: Response) => {
     const staff = await Staff.findOne({ email });
 
     if (staff && (await staff.matchPassword(password))) {
-        generateToken(res, (staff._id as any).toString());
+        const token = generateToken(res, (staff._id as any).toString());
         staff.isOnline = true;
         await staff.save();
 
@@ -28,6 +28,7 @@ export const loginStaff = asyncHandler(async (req: Request, res: Response) => {
             name: staff.name,
             email: staff.email,
             role: staff.role,
+            token,  // Also return in body so frontend can use as Bearer for cross-origin push subscribe
         });
     } else {
         res.status(401);
