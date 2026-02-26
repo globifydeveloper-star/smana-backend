@@ -1,20 +1,9 @@
 import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
-import { PushSubscriptionModel } from '../models/PushSubscription.js';
+import { FcmTokenModel } from '../models/FcmToken.js';
+import { getAdminMessaging } from '../config/firebaseAdmin.js';
 
-// @desc    Get the VAPID public key (needed by the browser to create a subscription)
-// @route   GET /api/push/vapid-public-key
-// @access  Private
-export const getVapidPublicKey = asyncHandler(async (req: Request, res: Response) => {
-    const key = process.env.VAPID_PUBLIC_KEY;
-    if (!key) {
-        res.status(500);
-        throw new Error('VAPID public key not configured on the server');
-    }
-    res.json({ publicKey: key });
-});
-
-// @desc    Save a push subscription for the logged-in user
+// @desc    Save (or refresh) an FCM token for the logged-in user
 // @route   POST /api/push/subscribe
 // @access  Private
 export const subscribeToPush = asyncHandler(async (req: Request, res: Response) => {
@@ -24,73 +13,72 @@ export const subscribeToPush = asyncHandler(async (req: Request, res: Response) 
         throw new Error('Not authorised');
     }
 
-    const { endpoint, keys } = req.body;
-    if (!endpoint || !keys?.p256dh || !keys?.auth) {
+    const { token } = req.body;
+    if (!token || typeof token !== 'string') {
         res.status(400);
-        throw new Error('Invalid subscription object — endpoint and keys required');
+        throw new Error('FCM token is required');
     }
 
-    // Upsert: if this browser already has a subscription, update it
-    await PushSubscriptionModel.findOneAndUpdate(
-        { endpoint },
+    // Upsert: if this device token already exists, update its userId/role
+    await FcmTokenModel.findOneAndUpdate(
+        { token },
         {
             userId: user._id,
             role: user.role || 'Admin',
-            endpoint,
-            keys: { p256dh: keys.p256dh, auth: keys.auth },
+            token,
             userAgent: req.headers['user-agent'] || '',
         },
         { upsert: true, new: true }
     );
 
-    res.status(201).json({ message: 'Subscribed to push notifications' });
+    res.status(201).json({ message: 'FCM token registered for push notifications' });
 });
 
-// @desc    Remove a push subscription
+// @desc    Remove an FCM token (called on logout / notification permission revoked)
 // @route   DELETE /api/push/unsubscribe
 // @access  Private
 export const unsubscribeFromPush = asyncHandler(async (req: Request, res: Response) => {
-    const { endpoint } = req.body;
-    if (!endpoint) {
+    const { token } = req.body;
+    if (!token) {
         res.status(400);
-        throw new Error('endpoint is required');
+        throw new Error('FCM token is required');
     }
 
-    await PushSubscriptionModel.findOneAndDelete({ endpoint });
-    res.json({ message: 'Unsubscribed from push notifications' });
+    await FcmTokenModel.findOneAndDelete({ token });
+    res.json({ message: 'FCM token removed' });
 });
 
-// @desc    Get all subscriptions for the logged-in user (debug/admin use)
+// @desc    Get all FCM tokens for the logged-in user (debug use)
 // @route   GET /api/push/subscriptions
 // @access  Private/Admin
 export const getMySubscriptions = asyncHandler(async (req: Request, res: Response) => {
     const user = req.user as any;
-    const subs = await PushSubscriptionModel.find({ userId: user._id })
-        .select('-keys') // Don't expose keys
+    const tokens = await FcmTokenModel.find({ userId: user._id })
+        .select('-token') // Don't expose full token string
         .sort({ createdAt: -1 });
-    res.json(subs);
+    res.json(tokens);
 });
 
-// @desc    Count all subscriptions in the DB — quick health check
+// @desc    Count all FCM tokens in the DB — quick health check
 // @route   GET /api/push/count
 // @access  Private/Admin
 export const countSubscriptions = asyncHandler(async (req: Request, res: Response) => {
-    const total = await PushSubscriptionModel.countDocuments();
-    const byRole = await PushSubscriptionModel.aggregate([
+    const total = await FcmTokenModel.countDocuments();
+    const byRole = await FcmTokenModel.aggregate([
         { $group: { _id: '$role', count: { $sum: 1 } } }
     ]);
-    const vapidConfigured = !!(process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY);
+    const fcmConfigured = !!getAdminMessaging();
     res.json({
         total,
         byRole,
-        vapidConfigured,
-        message: vapidConfigured
-            ? '✅ VAPID keys are set on this server'
-            : '❌ VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY are NOT set — push will not work!'
+        fcmConfigured,
+        message: fcmConfigured
+            ? '✅ Firebase Admin is initialised — FCM push is ready'
+            : '❌ Firebase Admin NOT initialised — check GOOGLE_APPLICATION_CREDENTIALS or FIREBASE_* env vars'
     });
 });
 
-// @desc    Send a test push to yourself — verifies the full push chain
+// @desc    Send a test FCM push to yourself — verifies the full push chain
 // @route   POST /api/push/test
 // @access  Private
 export const sendTestPush = asyncHandler(async (req: Request, res: Response) => {
@@ -98,19 +86,19 @@ export const sendTestPush = asyncHandler(async (req: Request, res: Response) => 
     const { sendPushToUser } = await import('../services/pushService.js');
 
     await sendPushToUser(user._id.toString(), {
-        title: '✅ Push Test',
-        body: `Hello ${user.name || user.email}! Push notifications are working correctly.`,
+        title: '✅ FCM Push Test',
+        body: `Hello ${user.name || user.email}! Firebase push notifications are working.`,
         icon: '/icon-192.png',
         url: '/dashboard',
         tag: 'push-test',
     });
 
-    const subCount = await PushSubscriptionModel.countDocuments({ userId: user._id });
+    const tokenCount = await FcmTokenModel.countDocuments({ userId: user._id });
     res.json({
-        message: `Test push sent to ${subCount} subscription(s) for your account`,
-        subscriptionCount: subCount,
-        tip: subCount === 0
-            ? 'No subscriptions found for your account. Log out, log back in, and allow notifications.'
+        message: `Test push sent to ${tokenCount} FCM token(s) for your account`,
+        tokenCount,
+        tip: tokenCount === 0
+            ? 'No FCM tokens found. Log out, log back in, and allow notifications in the browser.'
             : 'Check your browser/OS for the test notification.',
     });
 });

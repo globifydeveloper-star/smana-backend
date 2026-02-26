@@ -1,7 +1,6 @@
 import express from 'express';
 import { protect } from '../middlewares/authMiddleware.js';
 import {
-    getVapidPublicKey,
     subscribeToPush,
     unsubscribeFromPush,
     getMySubscriptions,
@@ -11,18 +10,17 @@ import {
 
 const router = express.Router();
 
-// VAPID public key is intentionally public — browsers need it to create subscriptions.
-router.get('/vapid-public-key', getVapidPublicKey);
-
-// Subscribe / Unsubscribe — require auth so we can attach userId + role to the subscription
+// Register / update an FCM token for the logged-in user's device
 router.post('/subscribe', protect, subscribeToPush);
+
+// Remove an FCM token (logout or permission revoked)
 router.delete('/unsubscribe', protect, unsubscribeFromPush);
 
-// Diagnostics — verify push is working end-to-end
-router.get('/count', protect, countSubscriptions);      // How many subscriptions in DB?
-router.post('/test', protect, sendTestPush);            // Send a test push to yourself
+// Diagnostics
+router.get('/count', protect, countSubscriptions);  // How many FCM tokens in DB?
+router.post('/test', protect, sendTestPush);         // Send a test push to yourself
 
-// Debug: see subscriptions for own account
+// Debug: see token records for own account
 router.get('/subscriptions', protect, getMySubscriptions);
 
 export default router;

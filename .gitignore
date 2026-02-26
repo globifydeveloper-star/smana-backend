@@ -113,3 +113,7 @@ Thumbs.db
 
 # Uploads
 uploads/
+
+# Firebase service account credentials (never commit to git!)
+../smana-app-firebase-adminsdk-fbsvc-a1cf6c2f37.json
+*firebase-adminsdk*.json
