@@ -6,11 +6,17 @@ const generateToken = (res: Response, userId: string) => {
         expiresIn: '30d',
     });
 
+    const isProduction = process.env.NODE_ENV === 'production';
+
     res.cookie('jwt', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV !== 'development',
-        sameSite: 'lax',
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        // In production: secure + sameSite=none allows the cookie to be sent in
+        // cross-origin requests (e.g. admin.smanahotels.com → api.smanahotels.com).
+        // SameSite=none REQUIRES secure=true (HTTPS).
+        // In development: secure=false + sameSite=lax works fine on localhost.
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days — persistent across PWA relaunch
     });
 
     return token;
