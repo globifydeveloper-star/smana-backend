@@ -82,25 +82,18 @@ async function _sendToTokens(
 
         const message: MulticastMessage = {
             tokens: chunk,
-            notification: {
+            // Send as a DATA-ONLY message so our custom sw.js handles it purely
+            // without needing the heavy Firebase JS SDK in the background.
+            data: {
                 title: payload.title,
                 body: payload.body,
-                imageUrl: payload.icon,
+                icon: payload.icon || '/icon-192.png',
+                badge: payload.badge || '/icon-96.png',
+                url: payload.url || '/dashboard',
+                tag: payload.tag || '',
+                ...(payload.data ? _stringifyValues(payload.data) : {}),
             },
             webpush: {
-                notification: {
-                    title: payload.title,
-                    body: payload.body,
-                    icon: payload.icon || '/icon-192.png',
-                    badge: payload.badge || '/icon-96.png',
-                    tag: payload.tag,
-                    renotify: !!payload.tag,
-                    vibrate: [200, 100, 200],
-                    data: {
-                        url: payload.url || '/dashboard',
-                        ...(payload.data ? _stringifyValues(payload.data) : {}),
-                    },
-                },
                 fcmOptions: {
                     link: payload.url || '/dashboard',
                 },
