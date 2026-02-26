@@ -94,16 +94,6 @@ export const placeOrder = asyncHandler(async (req: Request, res: Response) => {
             populatedOrder._id.toString(),
             `/dashboard/kitchen`
         );
-        // Notify Admin
-        await createNotification(
-            `New Order #${populatedOrder.roomNumber}`,
-            `New food order from Room ${populatedOrder.roomNumber}.`,
-            'info',
-            'Admin',
-            undefined,
-            populatedOrder._id.toString(),
-            `/dashboard/orders`
-        );
         res.status(201).json(populatedOrder);
     } else {
         res.status(400);

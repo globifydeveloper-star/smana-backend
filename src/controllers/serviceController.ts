@@ -46,16 +46,6 @@ export const createServiceRequest = asyncHandler(async (req: Request, res: Respo
             populatedRequest._id.toString(),
             `/dashboard/requests`
         );
-        // Notify Admin
-        await createNotification(
-            `Service Request Room ${populatedRequest.roomNumber}`,
-            `${populatedRequest.type} requested (Priority: ${populatedRequest.priority})`,
-            'info',
-            'Admin',
-            undefined,
-            populatedRequest._id.toString(),
-            `/dashboard/requests`
-        );
         res.status(201).json(populatedRequest);
     } else {
         res.status(400);

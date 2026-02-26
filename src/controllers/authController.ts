@@ -3,6 +3,7 @@ import asyncHandler from 'express-async-handler';
 import { Staff } from '../models/Staff.js';
 import generateToken from '../utils/generateToken.js';
 import { loginSchema } from '../validation/schemas.js';
+import { createNotification } from './notificationController.js';
 
 // @desc    Auth user & get token
 // @route   POST /api/auth/login
@@ -22,6 +23,17 @@ export const loginStaff = asyncHandler(async (req: Request, res: Response) => {
         const token = generateToken(res, (staff._id as any).toString());
         staff.isOnline = true;
         await staff.save();
+
+        // As requested: Send a notification whenever a staff/admin logs in or re-logs in
+        await createNotification(
+            `Staff Login`,
+            `${staff.name} (${staff.role}) just logged in.`,
+            'info',
+            'Admin', // Send to super admins
+            undefined,
+            staff._id.toString(),
+            '/dashboard/staff'
+        );
 
         res.json({
             _id: staff._id,

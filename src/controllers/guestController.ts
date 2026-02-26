@@ -108,16 +108,6 @@ export const checkInGuest = asyncHandler(async (req: Request, res: Response) => 
             (guest._id as any).toString(),
             `/dashboard/guests`
         );
-        // Notify Admin
-        await createNotification(
-            `Guest Check-in Room ${guest.roomNumber}`,
-            `${guest.name} checked in to Room ${guest.roomNumber}.`,
-            'success',
-            'Admin',
-            undefined,
-            (guest._id as any).toString(),
-            `/dashboard/guests`
-        );
         res.status(201).json(guest);
     } catch (error: any) {
         console.error('Check-in Error Detailed:', error);
@@ -275,16 +265,6 @@ export const setupStay = asyncHandler(async (req: Request, res: Response) => {
         `${guest.name} self check-in to Room ${roomNumber}.`,
         'success',
         'Receptionist',
-        undefined,
-        (guest._id as any).toString(),
-        `/dashboard/guests`
-    );
-
-    await createNotification(
-        `Self Check-in Room ${roomNumber}`,
-        `${guest.name} self check-in to Room ${roomNumber}.`,
-        'success',
-        'Admin',
         undefined,
         (guest._id as any).toString(),
         `/dashboard/guests`

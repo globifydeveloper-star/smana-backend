@@ -16,12 +16,17 @@ export const getNotifications = asyncHandler(async (req: Request, res: Response)
         throw new Error('Not authorized');
     }
 
-    const notifications = await Notification.find({
-        $or: [
-            { recipient: userId },
-            { role: userRole },
-        ]
-    }).sort({ createdAt: -1 }).limit(50);
+    // Admin and Manager can see ALL notifications globally
+    const query = ['Admin', 'Manager'].includes(userRole)
+        ? {}
+        : {
+            $or: [
+                { recipient: userId },
+                { role: userRole },
+            ]
+        };
+
+    const notifications = await Notification.find(query).sort({ createdAt: -1 }).limit(50);
 
     res.json(notifications);
 });
@@ -91,9 +96,15 @@ export const createNotification = async (
     });
 
     // ── Socket emit ────────────────────────────────────────────────────────
-    if (role) {
+    // 1. Always broadcast to Admin and Manager globally
+    socketService.emit('notification', notification, `role:Admin`);
+    socketService.emit('notification', notification, `role:Manager`);
+
+    // 2. Broadcast to the specific target role or recipient
+    if (role && role !== 'Admin' && role !== 'Manager') {
         socketService.emit('notification', notification, `role:${role}`);
-    } else if (recipientId) {
+    }
+    if (recipientId) {
         socketService.emit('notification', notification, `user:${recipientId}`);
     }
 

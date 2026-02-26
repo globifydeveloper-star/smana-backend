@@ -40,7 +40,7 @@ export const createFeedback = asyncHandler(async (req: Request, res: Response) =
         `New Feedback — Room ${roomNumber}`,
         `${user.name} left a ${rating}★ review: "${description.slice(0, 60)}…"`,
         rating >= 4 ? 'success' : rating >= 3 ? 'info' : 'warning',
-        'Admin',
+        'Receptionist', // Re-routing generic alerts to lower-level staff; Admins/Managers will catch all globally.
         undefined,
         (feedback._id as any).toString(),
         `/dashboard/feedback`,
