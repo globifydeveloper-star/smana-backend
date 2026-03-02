@@ -140,7 +140,11 @@ export const checkOutGuest = asyncHandler(async (req: Request, res: Response) =>
         }
 
         socketService.emit('guest-checked-out', guest);
-        res.json({ message: 'Guest checked out successfully' });
+        res.json({
+            message: 'Guest checked out successfully',
+            isCheckedIn: false,
+            guest
+        });
     } else {
         res.status(404);
         throw new Error('Guest not found or already checked out');
