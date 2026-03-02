@@ -99,7 +99,7 @@ export const updateMenuItem = asyncHandler(async (req: Request, res: Response) =
                 res.status(500);
                 throw new Error('Image upload failed');
             }
-        } else if (req.body.imageUrl) {
+        } else if (req.body.imageUrl !== undefined) {
             menuItem.imageUrl = req.body.imageUrl;
         }
 
