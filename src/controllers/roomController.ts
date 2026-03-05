@@ -11,7 +11,7 @@ import { createNotification } from './notificationController.js';
 // @access  Private
 export const getRooms = asyncHandler(async (req: Request, res: Response) => {
     const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 50; // Higher limit for rooms as they are often displayed in a grid
+    const limit = Number(req.query.limit) || 200; // Higher limit for rooms as they are often displayed in a grid
     const skip = (page - 1) * limit;
 
     const count = await Room.countDocuments({});
@@ -51,7 +51,7 @@ export const createRoom = asyncHandler(async (req: Request, res: Response) => {
         throw new Error('Invalid room data');
     }
 
-    const { roomNumber, type, floor, status } = result.data;
+    const { roomNumber, type, floor, status, bedType, specialFeatures } = result.data;
     const roomExists = await Room.findOne({ roomNumber });
 
     if (roomExists) {
@@ -64,6 +64,8 @@ export const createRoom = asyncHandler(async (req: Request, res: Response) => {
         type,
         floor,
         status: status || 'Available',
+        bedType,
+        specialFeatures: specialFeatures || [],
     });
 
     if (room) {
@@ -102,12 +104,6 @@ export const updateRoomStatus = asyncHandler(async (req: Request, res: Response)
 
         // Auto-checkout Guest if status is set to Available
         if (status === 'Available') {
-            // Find guest who was in this room (room.currentGuestId might be null now if we cleared it? No, wait)
-            // We need to handle this carefully.
-            // If we already saved the room with status='Available', we should also check if we need to clear the guest.
-            // Actually, `updateRoomStatus` (lines 80-107) just updates status.
-
-            // Check if there was a guest
             if (room.currentGuestId) {
                 const guest = await Guest.findById(room.currentGuestId);
                 if (guest) {
@@ -129,4 +125,53 @@ export const updateRoomStatus = asyncHandler(async (req: Request, res: Response)
         res.status(404);
         throw new Error('Room not found');
     }
+});
+
+// @desc    Toggle room availability (Available <-> Unavailable)
+// @route   PUT /api/rooms/:id/availability
+// @access  Private/Staff
+export const updateRoomAvailability = asyncHandler(async (req: Request, res: Response) => {
+    const { isAvailable } = req.body;
+    const room = await Room.findById(req.params.id);
+
+    if (room) {
+        // Only allow toggling if not occupied/cleaning/maintenance
+        if (room.status === 'Occupied' || room.status === 'Cleaning' || room.status === 'Maintenance') {
+            res.status(400);
+            throw new Error('Cannot change availability of a room that is Occupied, Cleaning, or under Maintenance');
+        }
+
+        room.status = isAvailable ? 'Available' : 'Unavailable';
+        const updatedRoom = await room.save();
+        socketService.emit('room-status-changed', updatedRoom);
+
+        res.json(updatedRoom);
+    } else {
+        res.status(404);
+        throw new Error('Room not found');
+    }
+});
+
+// @desc    Update room configuration (bedType, specialFeatures)
+// @route   PUT /api/rooms/:id/config
+// @access  Private/Admin+Manager
+export const updateRoomConfig = asyncHandler(async (req: Request, res: Response) => {
+    const { bedType, specialFeatures } = req.body;
+    const room = await Room.findById(req.params.id);
+
+    if (!room) {
+        res.status(404);
+        throw new Error('Room not found');
+    }
+
+    if (bedType !== undefined) {
+        room.bedType = bedType === '' ? undefined : bedType;
+    }
+    if (specialFeatures !== undefined) {
+        room.specialFeatures = specialFeatures;
+    }
+
+    const updatedRoom = await room.save();
+    socketService.emit('room-status-changed', updatedRoom);
+    res.json(updatedRoom);
 });

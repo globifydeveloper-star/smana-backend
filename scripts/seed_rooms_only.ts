@@ -16,29 +16,52 @@ const seedRooms = async () => {
         await Room.deleteMany();
         console.log('Cleared existing rooms.');
 
-        const rooms = [];
-        const roomTypes: any = ['Standard', 'Deluxe', 'Suite', 'Royal'];
-        // 5 floors, 20 rooms each = 100 rooms
-        for (let floor = 1; floor <= 5; floor++) {
-            for (let r = 1; r <= 20; r++) {
+        const rooms: any[] = [];
+
+        type BedType = 'Twin Bed' | 'Queen Bed' | 'King Bed';
+        type SpecialFeature = 'Bath Tub' | 'Handicap' | 'Not Required';
+
+        const bedTypeByCategory: Record<string, BedType> = {
+            Standard: 'Twin Bed',
+            Deluxe: 'Queen Bed',
+            Suite: 'King Bed',
+            Royal: 'King Bed',
+        };
+
+        const roomTypes = ['Standard', 'Deluxe', 'Suite', 'Royal'];
+
+        // 4 floors, 40 rooms each: 101-140, 201-240, 301-340, 401-440
+        for (let floor = 1; floor <= 4; floor++) {
+            for (let r = 1; r <= 40; r++) {
                 const roomNum = floor * 100 + r;
                 const typeIndex = Math.floor(Math.random() * roomTypes.length);
+                const type = roomTypes[typeIndex];
 
-                // Randomly assign some rooms as Occupied or Cleaning for realism
-                let status = 'Available';
-                const rand = Math.random();
-                if (rand > 0.7) status = 'Occupied';
-                else if (rand > 0.9) status = 'Cleaning';
+                // ~20% of rooms have no bedType assigned → they are Unavailable
+                const hasBedType = Math.random() > 0.20;
+                const bedType = hasBedType ? bedTypeByCategory[type] : undefined;
+                const status = hasBedType ? 'Available' : 'Unavailable';
 
-                // We won't link guests for Occupied rooms in this dummy seed 
-                // to avoid complexity, but dashboard should show them as Occupied.
+                // Assign special features only to rooms that have a bed type
+                let specialFeatures: SpecialFeature[] = [];
+                if (hasBedType) {
+                    const roll = Math.random();
+                    if (roll < 0.15) {
+                        specialFeatures = ['Bath Tub'];
+                    } else if (roll < 0.20) {
+                        specialFeatures = ['Handicap'];
+                    } else if (roll < 0.25) {
+                        specialFeatures = ['Not Required'];
+                    }
+                }
 
                 rooms.push({
                     roomNumber: roomNum.toString(),
-                    type: roomTypes[typeIndex],
-                    floor: floor,
-                    price: [200, 350, 800, 1500][typeIndex], // Add some dummy pricing logic if model supports it
-                    status: 'Available' // Set all to Available initially so we can test Check-in flow properly
+                    type,
+                    floor,
+                    ...(bedType ? { bedType } : {}),
+                    specialFeatures,
+                    status,
                 });
             }
         }
