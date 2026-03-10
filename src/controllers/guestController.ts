@@ -232,8 +232,8 @@ export const setupStay = asyncHandler(async (req: Request, res: Response) => {
         return;
     }
 
-    // Check if room is already occupied by someone else (existing 409 flow)
-    if (room.status === 'Occupied' && room.currentGuestId && room.currentGuestId.toString() !== guestId.toString()) {
+    // Check if room is already occupied by someone else (or marked as occupied by Admin)
+    if (room.status === 'Occupied' && (!room.currentGuestId || room.currentGuestId.toString() !== guestId.toString())) {
         const { force } = req.body;
 
         if (!force) {
@@ -245,24 +245,26 @@ export const setupStay = asyncHandler(async (req: Request, res: Response) => {
             return;
         }
 
-        // Force is true: Check out the previous guest
-        const previousGuest = await Guest.findById(room.currentGuestId);
-        if (previousGuest) {
-            previousGuest.isCheckedIn = false;
-            previousGuest.roomNumber = undefined;
-            await previousGuest.save();
-            socketService.emit('guest-checked-out', previousGuest);
+        // Force is true: Check out the previous guest if there is one
+        if (room.currentGuestId) {
+            const previousGuest = await Guest.findById(room.currentGuestId);
+            if (previousGuest) {
+                previousGuest.isCheckedIn = false;
+                previousGuest.roomNumber = undefined;
+                await previousGuest.save();
+                socketService.emit('guest-checked-out', previousGuest);
 
-            // Notify about forced checkout
-            await createNotification(
-                `Force Checkout Room ${roomNumber}`,
-                `Guest ${previousGuest.name} was force checked out by ${guest.name}.`,
-                'warning',
-                'Admin',
-                undefined,
-                (previousGuest._id as any).toString(),
-                `/dashboard/guests`
-            );
+                // Notify about forced checkout
+                await createNotification(
+                    `Force Checkout Room ${roomNumber}`,
+                    `Guest ${previousGuest.name} was force checked out by ${guest.name}.`,
+                    'warning',
+                    'Admin',
+                    undefined,
+                    (previousGuest._id as any).toString(),
+                    `/dashboard/guests`
+                );
+            }
         }
     }
 
