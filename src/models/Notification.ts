@@ -3,6 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface INotification extends Document {
     recipient?: mongoose.Types.ObjectId; // Specific user
     role?: string; // Broadcast to role (Admin, Receptionist, etc.)
+    roles?: string[]; // Broadcast to multiple roles
     title: string;
     message: string;
     type: 'info' | 'warning' | 'success' | 'error';
@@ -16,6 +17,7 @@ const notificationSchema = new Schema<INotification>(
     {
         recipient: { type: Schema.Types.ObjectId, ref: 'Staff' },
         role: { type: String },
+        roles: { type: [String] },
         title: { type: String, required: true },
         message: { type: String, required: true },
         type: { type: String, enum: ['info', 'warning', 'success', 'error'], default: 'info' },

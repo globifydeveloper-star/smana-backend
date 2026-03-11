@@ -89,18 +89,16 @@ export const updateRoomStatus = asyncHandler(async (req: Request, res: Response)
         const updatedRoom = await room.save();
         socketService.emit('room-status-changed', updatedRoom);
 
-        // Notify Housekeeping if status involves cleaning or maintenance
-        if (status === 'Cleaning' || status === 'Maintenance') {
-            await createNotification(
-                `Room ${updatedRoom.roomNumber} Status Update`,
-                `Room ${updatedRoom.roomNumber} is now ${status}.`,
-                'info',
-                'Housekeeping',
-                undefined,
-                (updatedRoom._id as any).toString(),
-                `/dashboard/rooms`
-            );
-        }
+        // Notify specific roles on any status change (Occupied, Available, Unavailable, Cleaning, Maintenance)
+        await createNotification(
+            `Room ${updatedRoom.roomNumber} Status Update`,
+            `Room ${updatedRoom.roomNumber} is now ${status}`,
+            'info',
+            ['Receptionist', 'Housekeeping', 'Front Office'],
+            undefined,
+            (updatedRoom._id as any).toString(),
+            `/dashboard/rooms`
+        );
 
         // Auto-checkout Guest if status is set to Available
         if (status === 'Available') {
@@ -144,6 +142,16 @@ export const updateRoomAvailability = asyncHandler(async (req: Request, res: Res
         room.status = isAvailable ? 'Available' : 'Unavailable';
         const updatedRoom = await room.save();
         socketService.emit('room-status-changed', updatedRoom);
+
+        await createNotification(
+            `Room ${updatedRoom.roomNumber} Status Update`,
+            `Room ${updatedRoom.roomNumber} is now ${updatedRoom.status}`,
+            'info',
+            ['Receptionist', 'Housekeeping', 'Front Office'],
+            undefined,
+            (updatedRoom._id as any).toString(),
+            `/dashboard/rooms`
+        );
 
         res.json(updatedRoom);
     } else {
