@@ -53,16 +53,25 @@ export const registerGuest = asyncHandler(async (req: Request, res: Response) =>
 // @access  Private/Staff
 export const checkInGuest = asyncHandler(async (req: Request, res: Response) => {
     try {
-        // Staff checking in a guest manually.
-        // If guest exists, update them. If not, create them (password optional or default?)
-        // For now keeping it simple: if creating new guest via admin, password might be empty or generated?
-        // Let's assume admin check-ins might not set a password immediately, or we handle it gracefully.
         const { name, email, phone, roomNumber, checkOutDate } = req.body;
         console.log('Check-in Request:', { name, email, phone, roomNumber, checkOutDate });
 
-        // ... (rest of checkIn logic, skipping schema check for password if strictly staff flow, or make it optional in schema for this route if needed)
-        // Actually, let's reuse registerGuestSchema but make password optional for checkInGuest?
-        // Or just check required fields manually.
+        // ── Availability guard ──────────────────────────────────────────────
+        // Block check-in ONLY if the room is explicitly marked Unavailable
+        const roomToCheck = await Room.findOne({ roomNumber });
+        if (!roomToCheck) {
+            res.status(404);
+            throw new Error(`Room ${roomNumber} not found.`);
+        }
+        if (roomToCheck.status === 'Unavailable') {
+            res.status(422).json({
+                message: 'This room is currently not available. Please contact admin.',
+                roomNumber: roomToCheck.roomNumber,
+                currentStatus: roomToCheck.status,
+            });
+            return;
+        }
+        // ───────────────────────────────────────────────────────────────────
 
         let guest = await Guest.findOne({ email });
 
@@ -83,7 +92,6 @@ export const checkInGuest = asyncHandler(async (req: Request, res: Response) => 
                 isCheckedIn: true,
                 checkInDate: new Date(),
                 checkOutDate: checkOutDate ? new Date(checkOutDate) : undefined
-                // No password set here if admin creates them. That's fine, matchPassword will fail, they can reset later.
             });
         }
 
@@ -212,8 +220,20 @@ export const setupStay = asyncHandler(async (req: Request, res: Response) => {
         throw new Error('Room not found');
     }
 
-    // Check if room is already occupied by someone else?
-    if (room.status === 'Occupied' && room.currentGuestId && room.currentGuestId.toString() !== guestId.toString()) {
+    // ── Availability guard ────────────────────────────────────────────────────
+    // Block check-in ONLY if the room is explicitly marked Unavailable.
+    // Rooms in Cleaning or Maintenance can still be checked into.
+    if (room.status === 'Unavailable') {
+        res.status(422).json({
+            message: 'This room is currently not available. Please contact admin.',
+            roomNumber: room.roomNumber,
+            currentStatus: room.status,
+        });
+        return;
+    }
+
+    // Check if room is already occupied by someone else (or marked as occupied by Admin)
+    if (room.status === 'Occupied' && (!room.currentGuestId || room.currentGuestId.toString() !== guestId.toString())) {
         const { force } = req.body;
 
         if (!force) {
@@ -225,24 +245,26 @@ export const setupStay = asyncHandler(async (req: Request, res: Response) => {
             return;
         }
 
-        // Force is true: Check out the previous guest
-        const previousGuest = await Guest.findById(room.currentGuestId);
-        if (previousGuest) {
-            previousGuest.isCheckedIn = false;
-            previousGuest.roomNumber = undefined;
-            await previousGuest.save();
-            socketService.emit('guest-checked-out', previousGuest);
+        // Force is true: Check out the previous guest if there is one
+        if (room.currentGuestId) {
+            const previousGuest = await Guest.findById(room.currentGuestId);
+            if (previousGuest) {
+                previousGuest.isCheckedIn = false;
+                previousGuest.roomNumber = undefined;
+                await previousGuest.save();
+                socketService.emit('guest-checked-out', previousGuest);
 
-            // Notify about forced checkout
-            await createNotification(
-                `Force Checkout Room ${roomNumber}`,
-                `Guest ${previousGuest.name} was force checked out by ${guest.name}.`,
-                'warning',
-                'Admin',
-                undefined,
-                (previousGuest._id as any).toString(),
-                `/dashboard/guests`
-            );
+                // Notify about forced checkout
+                await createNotification(
+                    `Force Checkout Room ${roomNumber}`,
+                    `Guest ${previousGuest.name} was force checked out by ${guest.name}.`,
+                    'warning',
+                    'Admin',
+                    undefined,
+                    (previousGuest._id as any).toString(),
+                    `/dashboard/guests`
+                );
+            }
         }
     }
 

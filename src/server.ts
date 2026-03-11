@@ -100,6 +100,10 @@ httpServer.listen(PORT, async () => {
     // Start order cleanup service for auto-cancelling abandoned payments
     const { startOrderCleanupService } = await import('./services/orderCleanupService.js');
     startOrderCleanupService();
+
+    // Start auto checkout cron job
+    const { startAutoCheckoutCron } = await import('./services/autoCheckoutService.js');
+    startAutoCheckoutCron();
 });
 
 // Graceful shutdown

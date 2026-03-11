@@ -23,6 +23,7 @@ export const getNotifications = asyncHandler(async (req: Request, res: Response)
             $or: [
                 { recipient: userId },
                 { role: userRole },
+                { roles: userRole },
             ]
         };
 
@@ -56,7 +57,7 @@ export const markAllAsRead = asyncHandler(async (req: Request, res: Response) =>
 
     await Notification.updateMany(
         {
-            $or: [{ recipient: userId }, { role: userRole }],
+            $or: [{ recipient: userId }, { role: userRole }, { roles: userRole }],
             isRead: false,
         },
         { isRead: true }
@@ -79,17 +80,21 @@ export const createNotification = async (
     title: string,
     message: string,
     type: 'info' | 'warning' | 'success' | 'error',
-    role?: string | string[],
+    targetRoles?: string | string[],
     recipientId?: string,
     referenceId?: string,
     link?: string,
     pushPayload?: Partial<PushPayload>   // Optional override for push content
 ) => {
+    // If targetRoles is an array, save it in `roles`. Otherwise save it in `role` for backward compatibility
+    const isArrayRole = Array.isArray(targetRoles);
+    
     const notification = await Notification.create({
         title,
         message,
         type,
-        role,
+        role: isArrayRole ? undefined : targetRoles,
+        roles: isArrayRole ? targetRoles : undefined,
         recipient: recipientId,
         referenceId,
         link
@@ -101,14 +106,16 @@ export const createNotification = async (
     socketService.emit('notification', notification, `role:Manager`);
 
     // 2. Broadcast to the specific target role(s) or recipient
-    if (role) {
-        const rolesToEmit = Array.isArray(role) ? role : [role];
-        for (const r of rolesToEmit) {
+    if (isArrayRole) {
+        targetRoles.forEach((r) => {
             if (r !== 'Admin' && r !== 'Manager') {
                 socketService.emit('notification', notification, `role:${r}`);
             }
-        }
+        });
+    } else if (targetRoles && targetRoles !== 'Admin' && targetRoles !== 'Manager') {
+        socketService.emit('notification', notification, `role:${targetRoles}`);
     }
+    
     if (recipientId) {
         socketService.emit('notification', notification, `user:${recipientId}`);
     }
@@ -126,13 +133,13 @@ export const createNotification = async (
     };
 
     try {
-        if (role) {
-            const rolesToPush = Array.isArray(role) ? role : [role];
-            for (const r of rolesToPush) {
-                await sendPushToRole(r, push);
-            }
+        if (isArrayRole && targetRoles.length > 0) {
+            // Need to import sendPushToRoles at the top! Wait, I should import it if not imported. It is imported on line 5.
+            await import('../services/pushService.js').then(m => m.sendPushToRoles(targetRoles, push));
+        } else if (!isArrayRole && targetRoles) {
+            await import('../services/pushService.js').then(m => m.sendPushToRole(targetRoles as string, push));
         } else if (recipientId) {
-            await sendPushToUser(recipientId, push);
+            await import('../services/pushService.js').then(m => m.sendPushToUser(recipientId, push));
         }
     } catch (err) {
         // Push failures must never crash the main request flow

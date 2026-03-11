@@ -21,7 +21,9 @@ export const createRoomSchema = z.object({
     roomNumber: z.string(),
     type: z.enum(['Standard', 'Deluxe', 'Suite', 'Royal']),
     floor: z.number(),
-    status: z.enum(['Available', 'Occupied', 'Cleaning', 'Maintenance']).optional(),
+    status: z.enum(['Available', 'Occupied', 'Cleaning', 'Maintenance', 'Unavailable']).optional(),
+    bedType: z.enum(['Twin Bed 90x200', 'Queen Bed 160x200', 'King Bed 180x200']).optional(),
+    specialFeatures: z.array(z.enum(['Bath Tub', 'Handicap', 'Not Required'])).optional(),
 });
 
 export const createMenuItemSchema = z.object({
