@@ -20,7 +20,12 @@ export const loginStaff = asyncHandler(async (req: Request, res: Response) => {
     const staff = await Staff.findOne({ email });
 
     if (staff && (await staff.matchPassword(password))) {
-        const token = generateToken(res, (staff._id as any).toString());
+        const isSuperRole = ['Admin', 'Manager'].includes(staff.role);
+        const authConfig = isSuperRole
+            ? { expiresIn: '365d', maxAge: 365 * 24 * 60 * 60 * 1000 }
+            : { expiresIn: '1d', maxAge: 1 * 24 * 60 * 60 * 1000 };
+
+        const token = generateToken(res, (staff._id as any).toString(), authConfig);
         staff.isOnline = true;
         await staff.save();
 

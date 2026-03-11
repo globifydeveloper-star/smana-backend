@@ -116,4 +116,5 @@ uploads/
 
 # Firebase service account credentials (never commit to git!)
 ../smana-app-firebase-adminsdk-fbsvc-a1cf6c2f37.json
+../smana-admin-app-firebase-adminsdk-fbsvc-eb13f7805c(SmanaGmail).json
 *firebase-adminsdk*.json

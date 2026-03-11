@@ -13,6 +13,9 @@ const router = express.Router();
 // Register / update an FCM token for the logged-in user's device
 router.post('/subscribe', protect, subscribeToPush);
 
+// Alias for mobile clients — satisfies the "POST /api/devices" acceptance criteria
+router.post('/devices', protect, subscribeToPush);
+
 // Remove an FCM token (logout or permission revoked)
 router.delete('/unsubscribe', protect, unsubscribeFromPush);
 

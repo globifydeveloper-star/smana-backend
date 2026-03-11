@@ -79,7 +79,7 @@ export const createNotification = async (
     title: string,
     message: string,
     type: 'info' | 'warning' | 'success' | 'error',
-    role?: string,
+    role?: string | string[],
     recipientId?: string,
     referenceId?: string,
     link?: string,
@@ -100,9 +100,14 @@ export const createNotification = async (
     socketService.emit('notification', notification, `role:Admin`);
     socketService.emit('notification', notification, `role:Manager`);
 
-    // 2. Broadcast to the specific target role or recipient
-    if (role && role !== 'Admin' && role !== 'Manager') {
-        socketService.emit('notification', notification, `role:${role}`);
+    // 2. Broadcast to the specific target role(s) or recipient
+    if (role) {
+        const rolesToEmit = Array.isArray(role) ? role : [role];
+        for (const r of rolesToEmit) {
+            if (r !== 'Admin' && r !== 'Manager') {
+                socketService.emit('notification', notification, `role:${r}`);
+            }
+        }
     }
     if (recipientId) {
         socketService.emit('notification', notification, `user:${recipientId}`);
@@ -122,7 +127,10 @@ export const createNotification = async (
 
     try {
         if (role) {
-            await sendPushToRole(role, push);
+            const rolesToPush = Array.isArray(role) ? role : [role];
+            for (const r of rolesToPush) {
+                await sendPushToRole(r, push);
+            }
         } else if (recipientId) {
             await sendPushToUser(recipientId, push);
         }

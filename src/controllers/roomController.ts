@@ -87,13 +87,13 @@ export const updateRoomStatus = asyncHandler(async (req: Request, res: Response)
         const updatedRoom = await room.save();
         socketService.emit('room-status-changed', updatedRoom);
 
-        // Notify Housekeeping if status involves cleaning or maintenance
-        if (status === 'Cleaning' || status === 'Maintenance') {
+        // Notify Staff for relevant room status updates
+        if (['Cleaning', 'Maintenance', 'Available', 'Occupied'].includes(status)) {
             await createNotification(
                 `Room ${updatedRoom.roomNumber} Status Update`,
                 `Room ${updatedRoom.roomNumber} is now ${status}.`,
                 'info',
-                'Housekeeping',
+                ['Housekeeping', 'Front Office', 'Receptionist'],
                 undefined,
                 (updatedRoom._id as any).toString(),
                 `/dashboard/rooms`

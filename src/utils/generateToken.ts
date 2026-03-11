@@ -1,9 +1,9 @@
 import jwt from 'jsonwebtoken';
 import { Response } from 'express';
 
-const generateToken = (res: Response, userId: string) => {
+const generateToken = (res: Response, userId: string, authConfig?: { expiresIn: string, maxAge: number }) => {
     const token = jwt.sign({ userId }, process.env.JWT_SECRET || '', {
-        expiresIn: '30d',
+        expiresIn: (authConfig?.expiresIn || '30d') as any,
     });
 
     const isProduction = process.env.NODE_ENV === 'production';
@@ -16,7 +16,7 @@ const generateToken = (res: Response, userId: string) => {
         // In development: secure=false + sameSite=lax works fine on localhost.
         secure: isProduction,
         sameSite: isProduction ? 'none' : 'lax',
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days — persistent across PWA relaunch
+        maxAge: authConfig?.maxAge || 30 * 24 * 60 * 60 * 1000,
     });
 
     return token;
