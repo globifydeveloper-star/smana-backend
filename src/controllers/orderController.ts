@@ -5,7 +5,11 @@ import { MenuItem } from '../models/MenuItem.js';
 import { createOrderSchema } from '../validation/schemas.js';
 import { socketService } from '../services/socketService.js';
 import { createNotification } from './notificationController.js';
+import { sendPushToUser } from '../services/pushService.js';
 import mongoose from 'mongoose';
+
+// All staff roles that should receive food-order notifications
+const ORDER_STAFF_ROLES = ['Admin', 'Manager', 'Receptionist', 'FrontOffice', 'Chef'];
 
 // @desc    Place a new food order
 // @route   POST /api/orders
@@ -84,15 +88,15 @@ export const placeOrder = asyncHandler(async (req: Request, res: Response) => {
         const populatedOrder = await order.populate('guestId', 'name');
         socketService.emit('new-food-order', populatedOrder);
 
-        // Notify Chef
+        // Notify ALL order-relevant staff roles: Admin, Manager, Receptionist, FrontOffice, Chef
         await createNotification(
-            `New Order #${populatedOrder.roomNumber}`,
-            `New food order from Room ${populatedOrder.roomNumber}.`,
+            `🍽️ New Food Order — Room ${populatedOrder.roomNumber}`,
+            `New food order from Room ${populatedOrder.roomNumber}. ${orderItems.length} item(s), Total: ${totalAmount.toFixed(2)}.`,
             'info',
-            'Chef',
+            ORDER_STAFF_ROLES,
             undefined,
             populatedOrder._id.toString(),
-            `/dashboard/kitchen`
+            `/dashboard/orders`
         );
         res.status(201).json(populatedOrder);
     } else {
@@ -140,10 +144,78 @@ export const updateOrderStatus = asyncHandler(async (req: Request, res: Response
     const order = await FoodOrder.findById(req.params.id);
 
     if (order) {
+        const previousStatus = order.status;
         order.status = status;
         const updatedOrder = await order.save();
         const populatedOrder = await updatedOrder.populate('guestId', 'name');
         socketService.emit('order-status-changed', populatedOrder);
+
+        // ── Notification: status update for all staff roles ───────────────────
+        const statusEmoji: Record<string, string> = {
+            Pending: '🕐',
+            Preparing: '👨‍🍳',
+            Ready: '✅',
+            Delivered: '🎉',
+            Cancelled: '❌',
+        };
+        const emoji = statusEmoji[status] || '📋';
+
+        await createNotification(
+            `${emoji} Order ${status} — Room ${populatedOrder.roomNumber}`,
+            `Order from Room ${populatedOrder.roomNumber} moved from ${previousStatus} → ${status}.`,
+            status === 'Cancelled' ? 'error' : status === 'Delivered' ? 'success' : 'info',
+            ORDER_STAFF_ROLES,
+            undefined,
+            populatedOrder._id.toString(),
+            `/dashboard/orders`
+        );
+
+        // ── Push to Guest mobile app ──────────────────────────────────────────
+        const guestId = (populatedOrder.guestId as any)?._id?.toString()
+            ?? (populatedOrder.guestId as any)?.toString();
+
+        if (guestId) {
+            const guestMessages: Record<string, { title: string; body: string }> = {
+                Preparing: {
+                    title: '👨‍🍳 Your order is being prepared!',
+                    body: `Your food order from Room ${populatedOrder.roomNumber} is now being prepared by our chef.`,
+                },
+                Ready: {
+                    title: '✅ Your order is ready!',
+                    body: `Your food order is ready and will be delivered soon. Room ${populatedOrder.roomNumber}.`,
+                },
+                Delivered: {
+                    title: '🎉 Order Delivered!',
+                    body: `Your food order has been delivered. Enjoy your meal! Room ${populatedOrder.roomNumber}.`,
+                },
+                Cancelled: {
+                    title: '❌ Order Cancelled',
+                    body: `Your food order (Room ${populatedOrder.roomNumber}) has been cancelled. Please contact the front desk if you have questions.`,
+                },
+            };
+
+            const guestMsg = guestMessages[status];
+            if (guestMsg) {
+                try {
+                    await sendPushToUser(guestId, {
+                        title: guestMsg.title,
+                        body: guestMsg.body,
+                        icon: '/icon-192.png',
+                        badge: '/icon-96.png',
+                        tag: `order-${populatedOrder._id}`,
+                        url: '/orders',
+                        data: {
+                            orderId: populatedOrder._id.toString(),
+                            status,
+                            type: 'order-status',
+                        },
+                    });
+                } catch (err) {
+                    console.error('[Push] Failed to send guest order push:', err);
+                }
+            }
+        }
+
         res.json(populatedOrder);
     } else {
         res.status(404);
